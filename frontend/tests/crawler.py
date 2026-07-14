@@ -8,7 +8,8 @@ import socket, subprocess, time, os
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 # 不用 4321：避免与本地后台 dev server 撞车后连上源码而非 dist 产物
 PORT = 4322
-URL = f'http://localhost:{PORT}/'
+TARGET = os.environ.get('TARGET_URL')
+URL = (TARGET.rstrip('/') + '/') if TARGET else f'http://localhost:{PORT}/'
 
 def wait_port(port, timeout=20):
     # Astro 7 preview 监听 IPv6 [::1]，双栈探测防漏
@@ -45,9 +46,11 @@ def assert_on_card(pg):
     d = min(dist_to_rect_border(cx, cy, r) for r in rects)
     assert d < 40, f'毛毛虫离最近卡片边框 {d:.0f}px，应贴边（<40）'
 
-srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-wait_port(PORT)
+srv = None
+if not TARGET:
+    srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    wait_port(PORT)
 try:
     with sync_playwright() as p:
         pg = p.chromium.launch().new_page()
@@ -85,4 +88,5 @@ try:
         assert not errs, errs
         print('CRAWLER PASS x3')
 finally:
-    srv.terminate()
+    if srv:
+        srv.terminate()

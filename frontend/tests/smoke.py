@@ -1,5 +1,6 @@
 """主页冒烟测试：结构、深浅色切换与记忆、夜间自动深色。
 用法：cd frontend && pnpm build && python3 tests/smoke.py
+线上回归：TARGET_URL=https://yuancong.ai/ python3 tests/smoke.py（不起本地服务）
 """
 from playwright.sync_api import sync_playwright
 import socket, subprocess, time, os
@@ -8,7 +9,8 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
 # 测试会连上 dev server（源码）而非 dist 构建产物，静默测错目标
 PORT = 4322
-URL = f'http://localhost:{PORT}/'
+TARGET = os.environ.get('TARGET_URL')
+URL = (TARGET.rstrip('/') + '/') if TARGET else f'http://localhost:{PORT}/'
 
 def wait_port(port, timeout=20):
     # Astro 7 preview 监听 IPv6 [::1]，双栈探测防漏
@@ -25,9 +27,11 @@ def wait_port(port, timeout=20):
         time.sleep(0.3)
     raise RuntimeError(f'preview server 未在 {timeout}s 内就绪（端口 {port}）')
 
-srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-wait_port(PORT)
+srv = None
+if not TARGET:
+    srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    wait_port(PORT)
 try:
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -204,4 +208,5 @@ try:
         assert not errs, errs
         print('SMOKE PASS')
 finally:
-    srv.terminate()
+    if srv:
+        srv.terminate()
