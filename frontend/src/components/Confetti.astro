@@ -14,7 +14,8 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const COLORS = ['hsl(240 95% 62%)', 'hsl(333 100% 45%)', 'hsl(200 80% 70%)', 'hsl(45 95% 60%)'];
   document.body.addEventListener('click', (e) => {
-    if ((e.target as Element).closest('a,button')) return;
+    // 排除真交互与伪交互元素：SOON 导航项和公众号（span 实现）点击也不该撒花
+    if ((e.target as Element).closest('a,button,.nav-soon,.wechat')) return;
     if (reduced) return;
     // 粒子挂 body（已定位），pageX/Y 即含滚动量的定位坐标
     const x = e.pageX;

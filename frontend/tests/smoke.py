@@ -2,14 +2,32 @@
 用法：cd frontend && pnpm build && python3 tests/smoke.py
 """
 from playwright.sync_api import sync_playwright
-import subprocess, time, os
+import socket, subprocess, time, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-URL = 'http://localhost:4321/'
+# 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
+# 测试会连上 dev server（源码）而非 dist 构建产物，静默测错目标
+PORT = 4322
+URL = f'http://localhost:{PORT}/'
 
-srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', '4321'], cwd=ROOT,
+def wait_port(port, timeout=20):
+    # Astro 7 preview 监听 IPv6 [::1]，双栈探测防漏
+    end = time.time() + timeout
+    while time.time() < end:
+        for fam, addr in ((socket.AF_INET6, '::1'), (socket.AF_INET, '127.0.0.1')):
+            try:
+                with socket.socket(fam) as s:
+                    s.settimeout(0.5)
+                    if s.connect_ex((addr, port)) == 0:
+                        return
+            except OSError:
+                pass
+        time.sleep(0.3)
+    raise RuntimeError(f'preview server 未在 {timeout}s 内就绪（端口 {port}）')
+
+srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-time.sleep(3)
+wait_port(PORT)
 try:
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -109,10 +127,19 @@ try:
         pg3d.add_init_script("localStorage.setItem('theme','dark');"
                              "Date.prototype.getHours = function(){ return 18; };")
         pg3d.goto(URL)
-        sky = pg3d.evaluate(
-            "getComputedStyle(document.body).getPropertyValue('--a-sky').trim()")
         assert 'sky-dusk' in pg3d.evaluate("document.body.className")
-        assert sky == 'hsl(223 45% 15%)', f'深色下 --a-sky 应为暗夜色，实际 {sky}'
+        # 借浏览器把变量解析成规范 rgb 再比：构建压缩会把 hsl() 改写成 hex，直接比字符串会误报
+        sky = pg3d.evaluate("""
+          (() => {
+            const el = document.createElement('span');
+            el.style.color = 'var(--a-sky)';
+            document.body.appendChild(el);
+            const c = getComputedStyle(el).color;
+            el.remove();
+            return c;
+          })()
+        """)
+        assert sky == 'rgb(21, 31, 55)', f'深色下 --a-sky 应为暗夜色 hsl(223 45% 15%)，实际 {sky}'
         pg3d.close()
 
         # --- 夜间自动深色（无记忆时按访客本地小时） ---
@@ -124,6 +151,21 @@ try:
             got = 'dark' in pg2.evaluate("document.documentElement.className")
             assert got == expect_dark, f'hour={hour} 期望 dark={expect_dark} 实际 {got}'
             pg2.close()
+
+        # --- 记忆优先于时段：夜间 + 已存浅色偏好 → 保持浅色 ---
+        pgL = browser.new_page()
+        pgL.add_init_script("localStorage.setItem('theme','light');"
+                            "Date.prototype.getHours = function(){ return 22; };")
+        pgL.goto(URL)
+        assert 'dark' not in pgL.evaluate("document.documentElement.className"), \
+            '存了浅色偏好时夜间不应自动深色'
+        pgL.close()
+
+        # --- 404 页：错误路径返回站内 404 页而非裸错误 ---
+        pg404 = browser.new_page()
+        pg404.goto(URL + 'no-such-page/')
+        assert '这一页不存在' in pg404.content(), '404 页未生效'
+        pg404.close()
 
         # --- 打字机 + 撒花 ---
         pg4 = browser.new_page()

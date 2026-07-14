@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — yuancong.ai" description="这一页不存在。">
+  <div class="page">
+    <div class="wrap">
+      <p class="code">404</p>
+      <p class="msg">这一页不存在。可能是链接打错了，也可能是它还没被写出来。</p>
+      <a class="home" href="/">回主页 →</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap { min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .6rem; }
+  .code {
+    margin: 0;
+    font-family: "Baloo 2", "PingFang SC", sans-serif; font-weight: 700;
+    font-size: clamp(4rem, 12vw, 7rem); line-height: 1;
+    color: var(--a-primary);
+  }
+  .msg { margin: 0; color: var(--a-muted); max-width: 26em; }
+  .home {
+    margin-top: .8rem; font-weight: 700; text-decoration: none;
+    color: var(--a-primary);
+  }
+  .home:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+</style>

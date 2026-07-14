@@ -3,10 +3,27 @@
 用法：cd frontend && pnpm build && python3 tests/crawler.py
 """
 from playwright.sync_api import sync_playwright
-import subprocess, time, os
+import socket, subprocess, time, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-URL = 'http://localhost:4321/'
+# 不用 4321：避免与本地后台 dev server 撞车后连上源码而非 dist 产物
+PORT = 4322
+URL = f'http://localhost:{PORT}/'
+
+def wait_port(port, timeout=20):
+    # Astro 7 preview 监听 IPv6 [::1]，双栈探测防漏
+    end = time.time() + timeout
+    while time.time() < end:
+        for fam, addr in ((socket.AF_INET6, '::1'), (socket.AF_INET, '127.0.0.1')):
+            try:
+                with socket.socket(fam) as s:
+                    s.settimeout(0.5)
+                    if s.connect_ex((addr, port)) == 0:
+                        return
+            except OSError:
+                pass
+        time.sleep(0.3)
+    raise RuntimeError(f'preview server 未在 {timeout}s 内就绪（端口 {port}）')
 
 def dist_to_rect_border(px, py, r):
     """点到矩形边框的距离（在边框上为 0）"""
@@ -28,9 +45,9 @@ def assert_on_card(pg):
     d = min(dist_to_rect_border(cx, cy, r) for r in rects)
     assert d < 40, f'毛毛虫离最近卡片边框 {d:.0f}px，应贴边（<40）'
 
-srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', '4321'], cwd=ROOT,
+srv = subprocess.Popen(['npx', 'astro', 'preview', '--port', str(PORT)], cwd=ROOT,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-time.sleep(3)
+wait_port(PORT)
 try:
     with sync_playwright() as p:
         pg = p.chromium.launch().new_page()
