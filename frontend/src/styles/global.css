@@ -1,0 +1,87 @@
+/* ============ 字体（Baloo 2 latin 子集，仅 wordmark / 页脚字标用） ============ */
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/fonts/baloo-2-latin-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-2199, U+2212;
+}
+
+/* ============ 设计 token（源：设计定稿 mockup） ============ */
+:root {
+  --a-bg: hsl(0 0% 100%);
+  --a-ink: hsl(222 22% 5%);
+  --a-muted: hsl(225 12% 40%);
+  --a-primary: hsl(240 95% 62%);
+  --a-secondary: hsl(333 100% 45%);
+  --a-sky: hsl(200 90% 90%);
+  --a-cloud: hsl(0 0% 100% / .95);
+  --a-chip: hsl(200 80% 92%);
+  --a-chip-ink: hsl(210 60% 32%);
+  --a-hover-wash: hsl(200 90% 93%);
+  --a-line: hsl(225 15% 90%);
+  --worm: hsl(140 45% 32%);
+  --bfly-wing: hsl(240 95% 62% / .75);
+  --bfly-wing2: hsl(333 100% 45% / .7);
+  --bfly-body: hsl(222 22% 15%);
+}
+html.dark {
+  --a-bg: hsl(223 25% 9%);
+  --a-ink: hsl(220 20% 93%);
+  --a-muted: hsl(222 12% 64%);
+  --a-primary: hsl(242 95% 74%);
+  --a-secondary: hsl(333 95% 66%);
+  --a-sky: hsl(223 45% 15%);
+  --a-cloud: hsl(223 30% 24% / .9);
+  --a-chip: hsl(220 40% 20%);
+  --a-chip-ink: hsl(210 60% 78%);
+  --a-hover-wash: hsl(222 35% 16%);
+  --a-line: hsl(222 15% 20%);
+  --worm: hsl(140 50% 56%);
+  --bfly-wing: hsl(52 100% 72% / .8);
+  --bfly-wing2: hsl(38 100% 62% / .7);
+  --bfly-body: hsl(50 40% 88%);
+  --crawler-glow: drop-shadow(0 0 5px hsl(70 90% 65% / .7));
+}
+/* 天色相位（访客本地时间，SkyBand 脚本打类）。
+   仅浅色模式生效：深色变量挂 html、相位变量挂 body，body 离元素更近会赢，
+   不加 :not(.dark) 的话深色模式下会冒出晚霞的浅紫天和亮云（mockup 中
+   两者同挂一个元素、深色后定义压过相位，拆分后必须显式让深色优先） */
+html:not(.dark) body.sky-dawn { --a-sky: hsl(24 92% 88%); --a-cloud: hsl(18 80% 96% / .95); --a-hover-wash: hsl(24 85% 93%); }
+html:not(.dark) body.sky-dusk { --a-sky: hsl(276 60% 89%); --a-cloud: hsl(300 45% 96% / .95); --a-hover-wash: hsl(276 55% 93%); }
+
+/* ============ 基础 ============ */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--a-bg);
+  color: var(--a-ink);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC", "Noto Sans SC", sans-serif;
+  line-height: 1.6;
+  position: relative;          /* 撒花粒子与毛毛虫的定位基准 */
+  overflow-x: clip;            /* 云漂出视口不产生横向滚动 */
+  transition: background-color .35s cubic-bezier(.41,.1,.13,1);
+}
+button { font: inherit; cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--a-primary); outline-offset: 2px; }
+::selection { background: var(--a-secondary); color: hsl(0 0% 100%); }
+
+.page { max-width: 68.75rem; margin: 0 auto; padding: 0 2rem; position: relative; }
+
+/* 深浅色切换时的统一过渡 */
+a, h1, p, footer, .post-in, .mail-in, .action {
+  transition: background-color .35s cubic-bezier(.41,.1,.13,1),
+              color .35s cubic-bezier(.41,.1,.13,1),
+              border-color .35s cubic-bezier(.41,.1,.13,1),
+              box-shadow .35s cubic-bezier(.41,.1,.13,1);
+}
+
+/* 入场起浮动画（hero / 文章区 / 联系区共用，跨组件类必须全局）。
+   用 backwards 而非 both：both 会让动画永久处于填充态，容器被浏览器
+   钉成层叠上下文，内部浮层（如公众号二维码）的 z-index 出不来；
+   backwards 只在延迟期隐藏元素，结束后恢复普通元素，视觉完全一致 */
+.rise { animation: a-rise .65s cubic-bezier(.2,.7,.3,1) backwards; animation-delay: var(--d, 0ms); }
+@keyframes a-rise { from { opacity: 0; transform: translateY(1.2rem); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .rise { animation: none; } }

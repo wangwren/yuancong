@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    text{font:700 44px "Baloo 2",system-ui,sans-serif;fill:hsl(240 95% 62%)}
+    @media (prefers-color-scheme:dark){text{fill:hsl(242 95% 74%)}}
+  </style>
+  <text x="32" y="47" text-anchor="middle">yc</text>
+</svg>

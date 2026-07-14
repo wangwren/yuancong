@@ -1,0 +1,92 @@
+---
+// 联系区：写信按钮 + 社交链接（GitHub / X 外链，公众号 hover 弹二维码）。
+// RSS 等有了真实去处再加，不挂空链接。
+---
+
+<div class="contact rise" style="--d:440ms">
+  <p class="line">想聊技术、聊产品，或者只是打个招呼 ——</p>
+  <a class="mail" href="mailto:hi@yuancong.ai"><span class="mail-in">写信给我 · hi@yuancong.ai</span></a>
+  <div class="socials">
+    <a href="https://github.com/wangwren" rel="me">GitHub</a>
+    <a href="https://x.com/debug_dog61749" rel="me">X / Twitter</a>
+    <span class="wechat" tabindex="0">公众号<span class="qr-pop">
+      <img src="/images/wechat-qr.jpg" alt="微信公众号二维码" width="172" height="172" loading="lazy" />
+      <span class="qr-hint">微信扫一扫</span>
+    </span></span>
+  </div>
+</div>
+
+<style>
+  /* 不设 z-index：设了会把整个联系区变成层叠上下文，弹层的 z-index 被封在里面
+     出不来（对外按 1 比，输给毛毛虫的 30）。压住天空带靠「定位元素 + DOM 在后」即可 */
+  .contact { position: relative; text-align: center; padding: 1.8rem 0 4rem; }
+  .contact .line { color: var(--a-muted); font-size: .98rem; margin: 0 0 1.2rem; }
+  .contact .mail { display: inline-block; text-decoration: none; border-radius: 999px; }
+  .mail-in {
+    display: inline-block; font-weight: 700;
+    background: var(--a-primary); color: hsl(0 0% 100%);
+    border-radius: 999px; padding: .72rem 1.7rem; font-size: 1rem;
+    box-shadow: 0 4px 0 hsl(240 60% 30% / .45);
+    transition: transform .18s cubic-bezier(.2,.7,.3,1.4), box-shadow .18s ease,
+                background-color .35s;
+  }
+  .contact .mail:hover .mail-in { transform: translateY(-3px) rotate(-1deg); box-shadow: 0 8px 0 hsl(240 60% 30% / .45); }
+  .contact .socials { margin-top: 1.3rem; display: flex; justify-content: center; gap: 1.4rem; font-size: .88rem; }
+  .contact .socials a {
+    color: var(--a-muted); text-decoration: none; font-weight: 500;
+    border-bottom: 2px solid transparent; padding-bottom: .1em;
+  }
+  .contact .socials a:hover { color: var(--a-ink); border-bottom-color: var(--a-secondary); }
+
+  /* 公众号：悬停 / 聚焦弹出二维码卡片（玩具盒语言：粗描边 + 硬阴影，微弹入场） */
+  .wechat {
+    position: relative;
+    color: var(--a-muted); font-weight: 500;
+    border-bottom: 2px solid transparent; padding-bottom: .1em;
+    cursor: default;
+  }
+  .wechat:hover, .wechat:focus-visible { color: var(--a-ink); border-bottom-color: var(--a-secondary); }
+  .qr-pop {
+    position: absolute; left: 50%; bottom: calc(100% + .8rem);
+    display: block; padding: .6rem .6rem .45rem;
+    background: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: 1rem;
+    box-shadow: 0 4px 0 var(--a-ink);
+    opacity: 0; visibility: hidden;
+    transform: translateX(-50%) translateY(6px) scale(.92);
+    transform-origin: bottom center;
+    transition: opacity .18s ease, visibility .18s,
+                transform .18s cubic-bezier(.2,.7,.3,1.4),
+                background-color .35s, border-color .35s, box-shadow .35s;
+    z-index: 50; /* 浮层盖过毛毛虫（30）与卡片，避免层级穿插 */
+  }
+  /* 指向「公众号」的小箭头尾巴：与弹层同款描边，从属关系一目了然 */
+  .qr-pop::after {
+    content: ""; position: absolute; left: 50%; bottom: -8.5px;
+    width: 12px; height: 12px;
+    background: var(--a-bg);
+    border-right: 3px solid var(--a-ink); border-bottom: 3px solid var(--a-ink);
+    transform: translateX(-50%) rotate(45deg);
+    border-bottom-right-radius: 3px;
+  }
+  .wechat:hover .qr-pop, .wechat:focus .qr-pop, .wechat:focus-within .qr-pop {
+    opacity: 1; visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  .qr-pop img { display: block; width: 172px; height: 172px; border-radius: .4rem; }
+  .qr-hint { display: block; text-align: center; font-size: .72rem; color: var(--a-muted); margin-top: .3rem; }
+  @media (prefers-reduced-motion: reduce) {
+    .qr-pop { transition: opacity .18s ease, visibility .18s; transform: translateX(-50%); }
+    .wechat:hover .qr-pop, .wechat:focus .qr-pop, .wechat:focus-within .qr-pop { transform: translateX(-50%); }
+  }
+</style>
+
+<script>
+  // 入场动画播完即摘掉 rise 类：opacity/transform 动画在播放期间会把容器
+  // 变成层叠上下文，二维码弹层的 z-index 会被封在里面、压到毛毛虫和卡片之下。
+  // 摘类后视觉无差异（backwards 填充结束后本就是自然样式），层级永久正确
+  const contact = document.querySelector<HTMLElement>('.contact')!;
+  contact.addEventListener('animationend', (e) => {
+    if (e.target === contact) contact.classList.remove('rise');
+  }, { once: true });
+</script>

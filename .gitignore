@@ -1,0 +1,28 @@
+# dependencies & build
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# env & secrets
+.env
+.env.*
+
+# system
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# AI local config
+.claude/*
+!.claude/settings.json
+
+# private: project docs & AI instructions stay local, not for the public repo
+docs/
+CLAUDE.md
+ROADMAP.md
+.git-backup-*/

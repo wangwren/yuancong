@@ -1,0 +1,70 @@
+---
+// 三段式导航：字标 / 链接组 / 动作区。P1 只有主页，Blog/Tools/About 挂 SOON 不可点；
+// RSS 入口 P1 不上线（无 feed）。
+---
+
+<nav>
+  <a class="wordmark" href="/">yuancong<span class="tld">.ai</span></a>
+  <div class="links">
+    <span class="nav-soon">Blog<span class="soon">SOON</span></span>
+    <span class="nav-soon">Tools<span class="soon">SOON</span></span>
+    <span class="nav-soon">About<span class="soon">SOON</span></span>
+  </div>
+  <div class="actions">
+    <button class="action" id="mode" aria-label="切换深色 / 浅色模式">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.6" fill="currentColor" stroke="none"></circle>
+        <path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3 19 19M19 5l-1.7 1.7M6.7 17.3 5 19"></path>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6 8.7 8.7 0 1 0 20.4 14.2Z"></path>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<style>
+  nav {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 2.5rem;
+    padding: 1.7rem 0; flex-wrap: wrap;
+  }
+  .wordmark {
+    font-family: "Baloo 2", "PingFang SC", sans-serif; font-weight: 700;
+    font-size: 1.4rem; color: var(--a-ink); text-decoration: none;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1.4), color .35s; display: inline-block;
+  }
+  .wordmark .tld { color: var(--a-primary); }
+  .wordmark:hover { transform: rotate(-2deg) scale(1.04); }
+  .links {
+    display: flex; align-items: center; gap: 2rem; font-size: .98rem;
+    margin-left: auto;
+  }
+  .nav-soon { color: var(--a-muted); font-weight: 500; }
+  .soon {
+    display: inline-block;
+    font-size: .62rem; background: var(--a-chip); color: var(--a-chip-ink);
+    border-radius: 999px; padding: .1em .55em; margin-left: .3em; vertical-align: .25em;
+    font-weight: 700; letter-spacing: .05em;
+  }
+  .actions { display: flex; align-items: center; gap: .4rem; margin-left: 1rem; }
+  .action {
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    border: 0; background: transparent; color: var(--a-muted);
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1.4), background-color .2s, color .2s;
+  }
+  .action:hover { background: var(--a-hover-wash); color: var(--a-primary); transform: scale(1.1); }
+  .action svg { width: 1.15rem; height: 1.15rem; display: block; }
+  .action .moon { display: none; }
+  :global(html.dark) .action .sun { display: none; }
+  :global(html.dark) .action .moon { display: block; }
+</style>
+
+<script>
+  const btn = document.getElementById('mode')!;
+  btn.addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  });
+</script>

@@ -1,0 +1,32 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      // 防闪：首帧渲染前定主题。优先访客记忆的选择，其次夜间时段（20-5 点）自动深色
+      (function () {
+        var saved = localStorage.getItem('theme');
+        var h = new Date().getHours();
+        var dark = saved ? saved === 'dark' : (h >= 20 || h < 5);
+        if (dark) document.documentElement.classList.add('dark');
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

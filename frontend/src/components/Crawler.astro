@@ -1,0 +1,246 @@
+---
+// 尺蠖毛毛虫：贴文章卡片边框爬行（__^__ 步态），点击化蝶飞走，5-9 秒后换一张卡重生。
+// 算法与常量一比一移植自设计定稿 mockup，数值不得改动。
+// 整个子树由脚本创建，样式必须全局。
+---
+
+<style is:global>
+  .crawler {
+    position: absolute; z-index: 30;
+    width: 54px; height: 34px; padding: 0; border: 0; background: none;
+    filter: var(--crawler-glow, none);
+    transition: filter .35s ease;
+  }
+  .crawler svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  /* 毛毛虫 = 一根粗圆头绿线，形状由 JS 逐帧驱动（尺蠖步态） */
+  .crawler .worm {
+    fill: none; stroke: var(--worm); stroke-width: 5.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke .35s ease;
+  }
+  /* 蝴蝶：扑翅 */
+  .crawler .bw { transform-origin: 21px 21px; }
+  .crawler .bw.wl { fill: var(--bfly-wing); }
+  .crawler .bw.wr { fill: var(--bfly-wing2); }
+  .crawler .bfly-body { fill: var(--bfly-body); }
+  .crawler .bfly-feeler { stroke: var(--bfly-body); stroke-width: 1.3; stroke-linecap: round; fill: none; }
+  .crawler.flapping .bw.l { animation: flap-l .13s linear infinite; }
+  .crawler.flapping .bw.r { animation: flap-r .13s linear infinite; }
+  @keyframes flap-l { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(-42deg); } }
+  @keyframes flap-r { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(42deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .crawler.flapping .bw.l, .crawler.flapping .bw.r { animation: none; }
+  }
+</style>
+
+<script>
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const WORM_SVG = '<svg viewBox="0 0 54 34" aria-hidden="true"><path class="worm" d=""/></svg>';
+  const BUTTERFLY =
+    '<svg viewBox="0 0 42 42" aria-hidden="true">' +
+    '<path class="bfly-feeler" d="M19 10 Q16 5 13 4"/><path class="bfly-feeler" d="M23 10 Q26 5 29 4"/>' +
+    '<ellipse class="bw l wl" cx="12" cy="15" rx="9.5" ry="7" transform="rotate(-30 12 15)"/>' +
+    '<ellipse class="bw r wl" cx="30" cy="15" rx="9.5" ry="7" transform="rotate(30 30 15)"/>' +
+    '<ellipse class="bw l wr" cx="14" cy="27" rx="7" ry="5.5" transform="rotate(-45 14 27)"/>' +
+    '<ellipse class="bw r wr" cx="28" cy="27" rx="7" ry="5.5" transform="rotate(45 28 27)"/>' +
+    '<ellipse class="bfly-body" cx="21" cy="21" rx="3" ry="10"/>' +
+    '<circle class="bfly-body" cx="21" cy="10.5" r="2.6"/>' +
+    '</svg>';
+
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.post .post-in'));
+
+  if (cards.length > 0) {
+    const crawler = document.createElement('button');
+    crawler.className = 'crawler';
+    crawler.setAttribute('aria-label', '一只贴着卡片边框爬的毛毛虫（点我有惊喜）');
+    crawler.innerHTML = WORM_SVG;
+    document.body.appendChild(crawler);
+    let wormPath = crawler.querySelector<SVGPathElement>('.worm')!;
+
+    let cardIdx = Math.floor(Math.random() * cards.length);
+    let originS = Math.random() * 600; /* 本轮起始时后脚在周长上的位置（px） */
+    let t0: number | null = null;     /* 本轮步态起始时间戳 */
+    let flying = false;
+
+    const GAIT = 1.4;     /* 一步周期（s） */
+    const WORM_LEN = 44;  /* 伸平时前后脚距（体长） */
+    const STEP = 12;      /* 每步前进量 = 拱起时缩短量 */
+    const ARCH = 9;       /* 拱起高度 */
+    const BUMP_HW = 0.24; /* 鼓包半宽（占体长比例）：两端各留 1/4 平贴边框 */
+    const N = 20;         /* 身体采样点数 */
+    const SVG_CX = 27, SVG_CY = 17;
+
+    /* 两端缓入缓出，锚脚切换时有自然停顿 */
+    const smooth = (u: number) => u * u * (3 - 2 * u);
+
+    /* 卡片静止位置（offset 坐标系，天然无视 transform）——
+       周长按静止边框算，避免 hover 旋转让包围盒变化导致虫错位 */
+    function restRect(el: HTMLElement) {
+      let x = 0, y = 0;
+      let n: HTMLElement | null = el;
+      while (n && n !== document.body) {
+        x += n.offsetLeft;
+        y += n.offsetTop;
+        n = n.offsetParent as HTMLElement | null;
+      }
+      return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+    }
+
+    /* 卡片圆角矩形周长参数化：s → 边框上的点 + 外法线 */
+    function geom() {
+      const r = restRect(cards[cardIdx]);
+      const rad = Math.min(19.2, r.w / 2, r.h / 2); /* border-radius:1.2rem */
+      return {
+        x: r.x, y: r.y, w: r.w, h: r.h, rad,
+        arc: Math.PI * rad / 2,
+        P: 2 * (r.w + r.h) - 8 * rad + 2 * Math.PI * rad,
+      };
+    }
+    type Geom = ReturnType<typeof geom>;
+
+    function pointAt(g: Geom, s: number) {
+      s = ((s % g.P) + g.P) % g.P;
+      const w = g.w, hh = g.h, rad = g.rad, arc = g.arc;
+      const lens = [w - 2 * rad, arc, hh - 2 * rad, arc, w - 2 * rad, arc, hh - 2 * rad, arc];
+      let seg = 0;
+      while (s > lens[seg]) { s -= lens[seg]; seg++; }
+      const x0 = g.x, y0 = g.y;
+      let th: number, cx: number, cy: number;
+      switch (seg) {
+        case 0: return { x: x0 + rad + s, y: y0, nx: 0, ny: -1 };
+        case 1:
+          th = -Math.PI / 2 + (s / arc) * Math.PI / 2; cx = x0 + w - rad; cy = y0 + rad; break;
+        case 2: return { x: x0 + w, y: y0 + rad + s, nx: 1, ny: 0 };
+        case 3:
+          th = (s / arc) * Math.PI / 2; cx = x0 + w - rad; cy = y0 + hh - rad; break;
+        case 4: return { x: x0 + w - rad - s, y: y0 + hh, nx: 0, ny: 1 };
+        case 5:
+          th = Math.PI / 2 + (s / arc) * Math.PI / 2; cx = x0 + rad; cy = y0 + hh - rad; break;
+        case 6: return { x: x0, y: y0 + hh - rad - s, nx: -1, ny: 0 };
+        default:
+          th = Math.PI + (s / arc) * Math.PI / 2; cx = x0 + rad; cy = y0 + rad; break;
+      }
+      return { x: cx + rad * Math.cos(th), y: cy + rad * Math.sin(th), nx: Math.cos(th), ny: Math.sin(th) };
+    }
+
+    /* 画虫：前后脚之间沿边框采样，拱起量沿外法线抬升。
+       轮廓 = 平 - 圆润鼓包 - 平（__^__）：两端各 1/4 体长贴边，
+       中段用余弦窗鼓起，顶部圆滑。最后套上卡片当前 transform，
+       hover 弹起 / 旋转时虫贴着卡片一起动。 */
+    function renderWorm(rear: number, frontPos: number, archH: number) {
+      const g = geom();
+      const tr = getComputedStyle(cards[cardIdx]).transform;
+      const m = tr && tr !== 'none' ? new DOMMatrixReadOnly(tr) : null;
+      const ox = g.x + g.w / 2, oy = g.y + g.h / 2; /* transform-origin: 卡片中心 */
+      const xf = (px: number, py: number) => {
+        if (!m) return { x: px, y: py };
+        return {
+          x: m.a * (px - ox) + m.c * (py - oy) + m.e + ox,
+          y: m.b * (px - ox) + m.d * (py - oy) + m.f + oy,
+        };
+      };
+      const footGap = frontPos - rear;
+      const midRaw = pointAt(g, (rear + frontPos) / 2);
+      const mid = xf(midRaw.x, midRaw.y);
+      crawler.style.left = mid.x + 'px';
+      crawler.style.top = mid.y + 'px';
+      crawler.style.transform = 'translate(-50%,-50%)';
+      let d = '';
+      for (let k = 0; k <= N; k++) {
+        const u = k / N;
+        const p = pointAt(g, rear + footGap * u);
+        const c = Math.abs(u - 0.5);
+        const lift = c < BUMP_HW ? archH * 0.5 * (1 + Math.cos(Math.PI * c / BUMP_HW)) : 0;
+        const q = xf(p.x + p.nx * lift, p.y + p.ny * lift);
+        d += (k === 0 ? 'M' : 'L') + (q.x - mid.x + SVG_CX).toFixed(1) + ' ' + (q.y - mid.y + SVG_CY).toFixed(1);
+      }
+      wormPath.setAttribute('d', d);
+    }
+
+    /* 尺蠖步态：两脚轮流锚定。前半拍前脚钉住、后脚拖上来（拱起）；
+       后半拍后脚钉住、前脚伸出去（展平）。每拍净前进 STEP。 */
+    function tick(ts: number) {
+      if (!flying) {
+        if (t0 == null) t0 = ts;
+        const cyc = (ts - t0) / 1000 / GAIT;
+        const k = Math.floor(cyc), phi = cyc - k;
+        const base = originS + STEP * k;
+        let rear: number, frontPos: number, squeeze: number;
+        if (phi < 0.5) {
+          const u = smooth(phi / 0.5);
+          rear = base + STEP * u;                  /* 后脚拖上来 */
+          frontPos = base + WORM_LEN;              /* 前脚锚定 */
+          squeeze = u;
+        } else {
+          const u2 = smooth((phi - 0.5) / 0.5);
+          rear = base + STEP;                      /* 后脚锚定 */
+          frontPos = base + WORM_LEN + STEP * u2;  /* 前脚伸出去 */
+          squeeze = 1 - u2;
+        }
+        renderWorm(rear, frontPos, ARCH * squeeze);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    let flightAnim: Animation | null = null;
+    function respawn() {
+      crawler.style.visibility = 'hidden';
+      crawler.classList.remove('flapping');
+      /* 必须显式 cancel 飞行动画：它带 fill:forwards，会把 opacity/transform
+         永久钉在飞走终点；且 Chromium 的 element.getAnimations() 会漏报
+         已 finished 的动画，靠遍历取消会扑空 */
+      if (flightAnim) { flightAnim.cancel(); flightAnim = null; }
+      setTimeout(() => {
+        const next = Math.floor(Math.random() * (cards.length - 1));
+        cardIdx = next >= cardIdx ? next + 1 : next;   /* 换一张卡片 */
+        originS = Math.random() * 1000;
+        t0 = null;                                     /* 步态从头计拍 */
+        crawler.getAnimations().forEach((a) => a.cancel());
+        crawler.innerHTML = WORM_SVG;
+        wormPath = crawler.querySelector<SVGPathElement>('.worm')!;
+        renderWorm(originS, originS + WORM_LEN, 0);
+        crawler.style.visibility = '';
+        flying = false;
+        crawler.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
+      }, 5000 + Math.random() * 4000);
+    }
+
+    crawler.addEventListener('click', () => {
+      if (flying) return;
+      flying = true;
+      /* 化蝶：原地变身，再飞走 */
+      crawler.classList.add('flapping');
+      crawler.innerHTML = BUTTERFLY;
+      crawler.style.transform = 'translate(-50%,-60%)';
+      if (reduced) {
+        flightAnim = crawler.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, fill: 'forwards' });
+        flightAnim.onfinish = respawn;
+        return;
+      }
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      const dx1 = dir * (60 + Math.random() * 80), dy1 = -(120 + Math.random() * 80);
+      const dx2 = dir * (220 + Math.random() * 160), dy2 = -(340 + Math.random() * 160);
+      flightAnim = crawler.animate([
+        { transform: 'translate(-50%,-60%)', opacity: 1 },
+        { transform: `translate(calc(-50% + ${dx1}px), calc(-60% + ${dy1}px)) rotate(${dir * 12}deg)`, opacity: 1, offset: 0.55 },
+        { transform: `translate(calc(-50% + ${dx2}px), calc(-60% + ${dy2}px)) rotate(${dir * 24}deg)`, opacity: 0 },
+      ], { duration: 1700, easing: 'cubic-bezier(.45,.05,.6,1)', fill: 'forwards' });
+      flightAnim.onfinish = respawn;
+    });
+
+    const renderStatic = () => {
+      renderWorm(80, 80 + WORM_LEN - STEP * 0.6, ARCH * 0.6); /* 静止的拱起姿势 */
+    };
+    if (reduced) {
+      renderStatic();
+    } else {
+      requestAnimationFrame(tick);
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        if (reduced && !flying) renderStatic();
+      });
+    }
+  }
+</script>
