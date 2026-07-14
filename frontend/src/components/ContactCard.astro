@@ -1,15 +1,15 @@
 ---
-// 联系区：写信按钮 + 社交链接（GitHub / X 外链，公众号 hover 弹二维码）。
+// 联系区：三枚玩具盒胶囊按钮（GitHub / X 外链，公众号 hover 弹二维码）。
+// 邮箱入口已撤（2026-07-14 定：不开 Email Routing，联系走社交入口）。
 // RSS 等有了真实去处再加，不挂空链接。
 ---
 
 <div class="contact rise" style="--d:440ms">
   <p class="line">想聊技术、聊产品，或者只是打个招呼 ——</p>
-  <a class="mail" href="mailto:hi@yuancong.ai"><span class="mail-in">写信给我 · hi@yuancong.ai</span></a>
   <div class="socials">
-    <a href="https://github.com/wangwren" rel="me">GitHub</a>
-    <a href="https://x.com/debug_dog61749" rel="me">X / Twitter</a>
-    <span class="wechat" tabindex="0">公众号<span class="qr-pop">
+    <a class="pill" href="https://github.com/wangwren" rel="me"><span class="pill-in">GitHub</span></a>
+    <a class="pill" href="https://x.com/debug_dog61749" rel="me"><span class="pill-in">X / Twitter</span></a>
+    <span class="pill wechat" tabindex="0"><span class="pill-in">公众号</span><span class="qr-pop">
       <img src="/images/wechat-qr.jpg" alt="微信公众号二维码" width="172" height="172" loading="lazy" />
       <span class="qr-hint">微信扫一扫</span>
     </span></span>
@@ -20,32 +20,38 @@
   /* 不设 z-index：设了会把整个联系区变成层叠上下文，弹层的 z-index 被封在里面
      出不来（对外按 1 比，输给毛毛虫的 30）。压住天空带靠「定位元素 + DOM 在后」即可 */
   .contact { position: relative; text-align: center; padding: 1.8rem 0 4rem; }
-  .contact .line { color: var(--a-muted); font-size: .98rem; margin: 0 0 1.2rem; }
-  .contact .mail { display: inline-block; text-decoration: none; border-radius: 999px; }
-  .mail-in {
-    display: inline-block; font-weight: 700;
-    background: var(--a-primary); color: hsl(0 0% 100%);
-    border-radius: 999px; padding: .72rem 1.7rem; font-size: 1rem;
-    box-shadow: 0 4px 0 hsl(240 60% 30% / .45);
+  .contact .line { color: var(--a-muted); font-size: .98rem; margin: 0 0 1.4rem; }
+  .socials { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; }
+
+  /* 命中区域（外层）静止不动，动画只发生在内层 —— 同文章卡片，避免 hover 位移抖动；
+     二维码弹层也锚在静止外层上，悬停时不跟着按钮跳 */
+  .pill { display: inline-block; text-decoration: none; border-radius: 999px; }
+  .pill-in {
+    display: inline-block; font-weight: 700; font-size: .95rem;
+    color: var(--a-ink); background: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: 999px;
+    padding: .58rem 1.35rem;
+    box-shadow: 0 4px 0 var(--a-ink);
     transition: transform .18s cubic-bezier(.2,.7,.3,1.4), box-shadow .18s ease,
-                background-color .35s;
+                background-color .35s, border-color .35s, color .35s;
   }
-  .contact .mail:hover .mail-in { transform: translateY(-3px) rotate(-1deg); box-shadow: 0 8px 0 hsl(240 60% 30% / .45); }
-  .contact .socials { margin-top: 1.3rem; display: flex; justify-content: center; gap: 1.4rem; font-size: .88rem; }
-  .contact .socials a {
-    color: var(--a-muted); text-decoration: none; font-weight: 500;
-    border-bottom: 2px solid transparent; padding-bottom: .1em;
+  .pill:hover .pill-in, .pill:focus-visible .pill-in {
+    transform: translateY(-3px) rotate(-1deg);
+    box-shadow: 0 8px 0 var(--a-ink);
+    color: var(--a-primary);
   }
-  .contact .socials a:hover { color: var(--a-ink); border-bottom-color: var(--a-secondary); }
+  .socials .pill:nth-child(even):hover .pill-in,
+  .socials .pill:nth-child(even):focus-visible .pill-in {
+    transform: translateY(-3px) rotate(1deg);
+  }
 
   /* 公众号：悬停 / 聚焦弹出二维码卡片（玩具盒语言：粗描边 + 硬阴影，微弹入场） */
-  .wechat {
-    position: relative;
-    color: var(--a-muted); font-weight: 500;
-    border-bottom: 2px solid transparent; padding-bottom: .1em;
-    cursor: default;
+  .wechat { position: relative; cursor: default; }
+  .wechat:focus-within .pill-in {
+    transform: translateY(-3px) rotate(-1deg);
+    box-shadow: 0 8px 0 var(--a-ink);
+    color: var(--a-primary);
   }
-  .wechat:hover, .wechat:focus-visible { color: var(--a-ink); border-bottom-color: var(--a-secondary); }
   .qr-pop {
     position: absolute; left: 50%; bottom: calc(100% + .8rem);
     display: block; padding: .6rem .6rem .45rem;

@@ -50,7 +50,8 @@ try:
         assert pg.locator('.post a').count() == 0, 'P1 卡片不应含链接'
         assert pg.locator('a[href="https://github.com/wangwren"]').count() == 1
         assert pg.locator('a[href="https://x.com/debug_dog61749"]').count() == 1
-        assert pg.locator('a[href="mailto:hi@yuancong.ai"]').count() == 1
+        assert pg.locator('a[href^="mailto:"]').count() == 0, '邮箱入口已撤，不应再有 mailto 链接'
+        assert pg.locator('.contact .pill').count() == 3, '联系区应有三枚胶囊按钮'
 
         # --- 公众号二维码弹层：默认隐藏，悬停可见 ---
         # 悬停前先等联系区入场动画播完（播完后组件脚本摘掉 rise 类，确定性信号）。
