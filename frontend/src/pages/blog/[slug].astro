@@ -1,0 +1,64 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteNav from '../../components/SiteNav.astro';
+import TocNav from '../../components/TocNav.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+const fmtDate = post.data.pubDate.toISOString().slice(0, 10);
+---
+
+<BaseLayout title={`${post.data.title} — yuancong.ai`} description={post.data.description}>
+  <div class="page">
+    <SiteNav />
+    <article>
+      <header class="post-head">
+        <a class="back" href="/blog/">← 全部文章</a>
+        <h1>{post.data.title}</h1>
+        <p class="meta">
+          {post.data.tags.map((t) => <span class="tag">{t}</span>)}
+          <time datetime={fmtDate}>{fmtDate}</time>
+        </p>
+      </header>
+      <div class="body-grid">
+        {toc.length > 0 && <TocNav headings={toc} />}
+        <div class="prose"><Content /></div>
+      </div>
+      <p class="foot-back"><a href="/blog/">← 全部文章</a></p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  article { padding: .5rem 0 3rem; }
+  .post-head { margin: 1rem 0 2rem; }
+  .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; }
+  .back:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  h1 { margin: .5em 0 .4em; font-size: clamp(1.5rem, 3.4vw, 2.1rem); line-height: 1.35; }
+  .meta { display: flex; align-items: center; gap: .6rem; margin: 0; }
+  .meta time { color: var(--a-muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .tag {
+    font-size: .7rem; font-weight: 700; letter-spacing: .03em;
+    background: var(--a-chip); color: var(--a-chip-ink);
+    border-radius: 999px; padding: .16em .7em;
+  }
+  .body-grid { display: grid; gap: 1.5rem; align-items: start; }
+  @media (min-width: 1080px) {
+    .body-grid { grid-template-columns: 16rem minmax(0, 1fr); gap: 2.5rem; }
+  }
+  .foot-back { margin-top: 3rem; }
+  .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; }
+  .foot-back a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+</style>
+
+<script>
+  // 窄屏默认收起目录（服务端渲染为展开态，桌面端保持常开）
+  if (matchMedia('(max-width: 1079px)').matches) document.querySelector('.toc')?.removeAttribute('open');
+</script>

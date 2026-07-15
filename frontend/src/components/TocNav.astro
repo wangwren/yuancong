@@ -1,0 +1,41 @@
+---
+// 文章目录：depth 2-4 的标题列表。桌面端侧栏常开，窄屏由 [slug].astro 里的脚本收起。
+import type { MarkdownHeading } from 'astro';
+
+interface Props { headings: MarkdownHeading[] }
+const { headings } = Astro.props;
+---
+
+<details class="toc" open>
+  <summary>目录</summary>
+  <nav>
+    <ul>
+      {headings.map((h) => (
+        <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>
+      ))}
+    </ul>
+  </nav>
+</details>
+
+<style>
+  .toc {
+    border: 3px solid var(--a-ink); border-radius: 1.2rem;
+    background: var(--a-bg); box-shadow: 0 4px 0 var(--a-ink);
+    padding: .9rem 1.1rem; font-size: .86rem;
+  }
+  summary { font-weight: 700; cursor: pointer; }
+  nav { margin-top: .5rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { margin: .35em 0; line-height: 1.45; }
+  li.d3 { padding-left: .9em; }
+  li.d4 { padding-left: 1.8em; }
+  a { color: var(--a-muted); text-decoration: none; display: block; }
+  a:hover { color: var(--a-primary); }
+  @media (min-width: 1080px) {
+    .toc {
+      position: sticky; top: 1.5rem;
+      max-height: calc(100vh - 3rem); overflow-y: auto;
+    }
+    summary { pointer-events: none; }  /* 桌面端常开，不给折叠 */
+  }
+</style>

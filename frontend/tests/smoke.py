@@ -206,6 +206,24 @@ try:
             timeout=3000)
         pg5.close()
 
+        # --- P2 博客：详情页 ---
+        pg.goto(URL + 'blog/mysql-interview-notes/')
+        assert pg.locator('article h1').inner_text().strip() == 'MySQL 面试笔记'
+        assert pg.locator('.prose .astro-code').count() >= 5, '应有 Shiki 代码块（该篇原文 10 个）'
+        assert pg.locator('.toc nav a').count() >= 15, 'TOC 条目应与 26 小节同量级'
+        light_bg = pg.locator('.prose .astro-code').first.evaluate(
+            'el => getComputedStyle(el).backgroundColor')
+        pg.locator('#mode').click()
+        dark_bg = pg.locator('.prose .astro-code').first.evaluate(
+            'el => getComputedStyle(el).backgroundColor')
+        assert light_bg != dark_bg, '代码块应随主题双色切换'
+        pg.locator('#mode').click()  # 切回浅色，不污染后续断言
+        # 带图文章：图链应全指向 R2 自定义域且真实可达
+        pg.goto(URL + 'blog/scenario-full-gc-tuning/')
+        srcs = pg.locator('.prose img').evaluate_all('els => els.map(e => e.src)')
+        assert srcs and all(s.startswith('https://img.yuancong.ai/') for s in srcs), srcs
+        assert pg.request.get(srcs[0]).status == 200, 'R2 图片应可达'
+
         assert not errs, errs
         print('SMOKE PASS')
 finally:
