@@ -21,21 +21,24 @@ const { headings } = Astro.props;
   .toc {
     border: 3px solid var(--a-ink); border-radius: 1.2rem;
     background: var(--a-bg); box-shadow: 0 4px 0 var(--a-ink);
-    padding: .9rem 1.1rem; font-size: .86rem;
+    padding: .9rem 1.1rem; font-size: .84rem;
   }
   summary { font-weight: 700; cursor: pointer; }
   nav { margin-top: .5rem; }
   ul { list-style: none; margin: 0; padding: 0; }
-  li { margin: .35em 0; line-height: 1.45; }
+  li { margin: .3em 0; line-height: 1.4; }
   li.d3 { padding-left: .9em; }
   li.d4 { padding-left: 1.8em; }
   a { color: var(--a-muted); text-decoration: none; display: block; }
   a:hover { color: var(--a-primary); }
-  @media (min-width: 1080px) {
+  /* 宽屏：悬浮到 68.75rem 容器右缘外的空白区，正文不让位。
+     容器半宽 34.375rem + 1rem 间距，栏宽 15rem → 需视口 ≥ 约 1612px */
+  @media (min-width: 1620px) {
     .toc {
-      position: sticky; top: 1.5rem;
-      max-height: calc(100vh - 3rem); overflow-y: auto;
+      position: fixed; top: 6.5rem;
+      left: calc(50% + 35.375rem); width: 15rem;
+      max-height: calc(100vh - 8.5rem); overflow-y: auto;
     }
-    summary { pointer-events: none; }  /* 桌面端常开，不给折叠 */
+    summary { pointer-events: none; }  /* 宽屏常开，不给折叠 */
   }
 </style>

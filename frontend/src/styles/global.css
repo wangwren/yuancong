@@ -87,19 +87,22 @@ a, h1, p, footer, .post-in, .mail-in, .action {
 @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
 
 /* ---- 博客正文（P2） ---- */
-.prose { min-width: 0; line-height: 1.85; }
-.prose h2, .prose h3, .prose h4 { line-height: 1.4; margin: 2.1em 0 .6em; scroll-margin-top: 1.5rem; }
+.prose { min-width: 0; line-height: 1.7; }
+.prose p { margin: .85em 0; }
+.prose h2, .prose h3, .prose h4 { line-height: 1.4; margin: 1.6em 0 .55em; scroll-margin-top: 1.5rem; }
 .prose h2 { font-size: 1.35rem; padding-bottom: .35em; border-bottom: 3px solid var(--a-line); }
 .prose h3 { font-size: 1.15rem; }
 .prose h4 { font-size: 1.02rem; }
-.prose ul, .prose ol { padding-left: 1.4em; }
+.prose ul, .prose ol { margin: .85em 0; padding-left: 1.4em; }
+.prose li { margin: .25em 0; }
+.prose li > ul, .prose li > ol { margin: .25em 0; }
 .prose img {
   max-width: 100%; height: auto;
   border: 3px solid var(--a-ink); border-radius: 1rem;
   box-shadow: 0 4px 0 var(--a-ink);
 }
 .prose blockquote {
-  margin: 1.2em 0; padding: .4em 1.1em;
+  margin: 1em 0; padding: .4em 1.1em;
   border-left: 4px solid var(--a-secondary);
   color: var(--a-muted); background: var(--a-hover-wash);
   border-radius: 0 .8rem .8rem 0;
@@ -112,7 +115,7 @@ a, h1, p, footer, .post-in, .mail-in, .action {
 }
 .prose .astro-code {
   border: 3px solid var(--a-ink); border-radius: 1rem;
-  padding: 1.1rem 1.2rem; margin: 1.2em 0; font-size: .88rem;
+  padding: .9rem 1.05rem; margin: 1em 0; font-size: .86rem; line-height: 1.6;
 }
 /* Shiki 双主题：深色时启用 --shiki-dark 系变量（官方推荐写法，站点用 html.dark 开关） */
 html.dark .astro-code,

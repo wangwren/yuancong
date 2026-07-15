@@ -38,7 +38,7 @@ const fmtDate = post.data.pubDate.toISOString().slice(0, 10);
 
 <style>
   article { padding: .5rem 0 3rem; }
-  .post-head { margin: 1rem 0 2rem; }
+  .post-head { margin: .8rem 0 1.5rem; }
   .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; }
   .back:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
   h1 { margin: .5em 0 .4em; font-size: clamp(1.5rem, 3.4vw, 2.1rem); line-height: 1.35; }
@@ -49,16 +49,15 @@ const fmtDate = post.data.pubDate.toISOString().slice(0, 10);
     background: var(--a-chip); color: var(--a-chip-ink);
     border-radius: 999px; padding: .16em .7em;
   }
-  .body-grid { display: grid; gap: 1.5rem; align-items: start; }
-  @media (min-width: 1080px) {
-    .body-grid { grid-template-columns: 16rem minmax(0, 1fr); gap: 2.5rem; }
-  }
+  /* 正文占满容器宽；TOC 不占列——宽屏时悬浮在容器右侧的空白区（见 TocNav），
+     中窄屏折叠在正文顶部 */
+  .body-grid { display: grid; gap: 1.2rem; align-items: start; }
   .foot-back { margin-top: 3rem; }
   .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; }
   .foot-back a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
 </style>
 
 <script>
-  // 窄屏默认收起目录（服务端渲染为展开态，桌面端保持常开）
-  if (matchMedia('(max-width: 1079px)').matches) document.querySelector('.toc')?.removeAttribute('open');
+  // 悬浮目录栏放不下时（<1620px）默认收起（服务端渲染为展开态，宽屏保持常开）
+  if (matchMedia('(max-width: 1619px)').matches) document.querySelector('.toc')?.removeAttribute('open');
 </script>
