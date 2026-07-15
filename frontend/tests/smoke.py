@@ -45,7 +45,9 @@ try:
             "if (!localStorage.getItem('theme')) localStorage.setItem('theme','light');")
         pg.goto(URL)
         assert pg.locator('h1 .me').inner_text() == '小从'
-        assert pg.locator('.nav-soon').count() == 3
+        assert pg.locator('.nav-soon').count() == 2, 'SOON 只剩 Tools/About'
+        assert pg.locator('nav a.nav-link[href="/blog/"]').count() == 1, '导航 Blog 应可点'
+        assert pg.locator('nav a.action[href="/rss.xml"]').count() == 1, '导航应有 RSS 入口'
         assert pg.locator('.post').count() >= 3, '文章卡片应至少 3 张'
         assert pg.locator('a.post[href^="/blog/"]').count() == 4, '主页 4 张卡片应为博客链接'
         assert pg.locator('a.more[href="/blog/"]').count() == 1, '「全部文章」应指向列表页'
@@ -244,6 +246,14 @@ try:
         pg.locator('a.post').first.click()
         pg.wait_for_url('**/blog/**')
         assert pg.locator('article h1').count() == 1, '卡片应能点进详情页'
+
+        # --- P2：RSS ---
+        resp = pg.request.get(URL + 'rss.xml')
+        assert resp.status == 200, f'rss.xml 应 200，实际 {resp.status}'
+        xml = resp.text()
+        assert xml.count('<item>') == 10, f'RSS 应含 10 篇，实际 {xml.count("<item>")}'
+        assert '/blog/mysql-interview-notes/' in xml, 'RSS 链接应指向详情页'
+        assert '<language>zh-cn</language>' in xml
 
         assert not errs, errs
         print('SMOKE PASS')

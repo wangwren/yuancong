@@ -1,16 +1,22 @@
 ---
-// 三段式导航：字标 / 链接组 / 动作区。P1 只有主页，Blog/Tools/About 挂 SOON 不可点；
-// RSS 入口 P1 不上线（无 feed）。
+// 三段式导航：字标 / 链接组 / 动作区。Blog 已上线；Tools/About 挂 SOON；RSS 入口在动作区。
+const onBlog = Astro.url.pathname.startsWith('/blog');
 ---
 
 <nav>
   <a class="wordmark" href="/">yuancong<span class="tld">.ai</span></a>
   <div class="links">
-    <span class="nav-soon">Blog<span class="soon">SOON</span></span>
+    <a class="nav-link" href="/blog/" aria-current={onBlog ? 'page' : undefined}>Blog</a>
     <span class="nav-soon">Tools<span class="soon">SOON</span></span>
     <span class="nav-soon">About<span class="soon">SOON</span></span>
   </div>
   <div class="actions">
+    <a class="action" href="/rss.xml" aria-label="RSS 订阅">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path>
+        <circle cx="6" cy="18" r="1.8" fill="currentColor" stroke="none"></circle>
+      </svg>
+    </a>
     <button class="action" id="mode" aria-label="切换深色 / 浅色模式">
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="4.6" fill="currentColor" stroke="none"></circle>
@@ -40,6 +46,8 @@
     display: flex; align-items: center; gap: 2rem; font-size: .98rem;
     margin-left: auto;
   }
+  .nav-link { color: var(--a-ink); font-weight: 600; text-decoration: none; transition: color .2s; }
+  .nav-link:hover, .nav-link[aria-current="page"] { color: var(--a-primary); }
   .nav-soon { color: var(--a-muted); font-weight: 500; }
   .soon {
     display: inline-block;
@@ -48,6 +56,7 @@
     font-weight: 700; letter-spacing: .05em;
   }
   .actions { display: flex; align-items: center; gap: .4rem; margin-left: 1rem; }
+  a.action { text-decoration: none; }
   .action {
     width: 2.4rem; height: 2.4rem; border-radius: 50%;
     border: 0; background: transparent; color: var(--a-muted);
