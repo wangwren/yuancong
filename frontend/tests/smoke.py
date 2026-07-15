@@ -213,7 +213,17 @@ try:
         pg.goto(URL + 'blog/mysql-interview-notes/')
         assert pg.locator('article h1').inner_text().strip() == 'MySQL 面试笔记'
         assert pg.locator('.prose .astro-code').count() >= 5, '应有 Shiki 代码块（该篇原文 10 个）'
-        assert pg.locator('.toc nav a').count() >= 15, 'TOC 条目应与 26 小节同量级'
+        # TOC 断点 1620px：默认 1280 视口下 details 被脚本收起（此处验证收起态），
+        # 展开态必须在宽视口页面上验证——count() 数 DOM 不分辨 details 开合，光数数会退化成假断言
+        assert pg.locator('details.toc:not([open])').count() == 1, '窄屏 TOC 应默认收起为顶部条'
+        pgT = browser.new_page(viewport={'width': 1680, 'height': 1000})
+        pgT.add_init_script(
+            "if (!localStorage.getItem('theme')) localStorage.setItem('theme','light');")
+        pgT.goto(URL + 'blog/mysql-interview-notes/')
+        assert pgT.locator('details.toc[open]').count() == 1, '宽屏（≥1620px）TOC 应默认展开'
+        assert pgT.locator('.toc nav a').count() >= 15, 'TOC 条目应与 26 小节同量级'
+        assert pgT.locator('.toc nav a').first.is_visible(), 'TOC 条目应真实可见'
+        pgT.close()
         light_bg = pg.locator('.prose .astro-code').first.evaluate(
             'el => getComputedStyle(el).backgroundColor')
         pg.locator('#mode').click()
