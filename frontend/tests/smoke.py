@@ -3,7 +3,7 @@
 线上回归：TARGET_URL=https://yuancong.ai/ python3 tests/smoke.py（不起本地服务）
 """
 from playwright.sync_api import sync_playwright
-import socket, subprocess, time, os
+import socket, subprocess, time, os, urllib.parse
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
@@ -47,7 +47,8 @@ try:
         assert pg.locator('h1 .me').inner_text() == '小从'
         assert pg.locator('.nav-soon').count() == 3
         assert pg.locator('.post').count() >= 3, '文章卡片应至少 3 张'
-        assert pg.locator('.post a').count() == 0, 'P1 卡片不应含链接'
+        assert pg.locator('a.post[href^="/blog/"]').count() == 4, '主页 4 张卡片应为博客链接'
+        assert pg.locator('a.more[href="/blog/"]').count() == 1, '「全部文章」应指向列表页'
         assert pg.locator('a[href="https://github.com/wangwren"]').count() == 1
         assert pg.locator('a[href="https://x.com/debug_dog61749"]').count() == 1
         assert pg.locator('a[href^="mailto:"]').count() == 0, '邮箱入口已撤，不应再有 mailto 链接'
@@ -223,6 +224,26 @@ try:
         srcs = pg.locator('.prose img').evaluate_all('els => els.map(e => e.src)')
         assert srcs and all(s.startswith('https://img.yuancong.ai/') for s in srcs), srcs
         assert pg.request.get(srcs[0]).status == 200, 'R2 图片应可达'
+
+        # --- P2 博客：列表页与标签筛选 ---
+        pg.goto(URL + 'blog/')
+        assert pg.locator('a.post').count() == 10, '列表页应有 10 篇'
+        pg.locator('.tagbar .pill[data-tag="场景题"]').click()
+        assert pg.locator('a.post:not(.hide)').count() == 3, '场景题筛选应剩 3 篇'
+        assert '场景题' in urllib.parse.unquote(pg.url), '筛选应同步到 hash'
+        pg.locator('.tagbar .pill[data-tag="全部"]').click()
+        assert pg.locator('a.post:not(.hide)').count() == 10, '取消筛选应恢复全量'
+        # 用新页面验证「直达」：若复用 pg，浏览器把仅 hash 不同的 goto 当同文档导航
+        # （不重新执行脚本），并非真实直达场景，会误报
+        pgH = browser.new_page()
+        pgH.goto(URL + 'blog/#Java')
+        assert pgH.locator('a.post:not(.hide)').count() == 2, 'hash 直达 Java 应只显 2 篇'
+        pgH.close()
+        # 卡片点进详情
+        pg.goto(URL + 'blog/')
+        pg.locator('a.post').first.click()
+        pg.wait_for_url('**/blog/**')
+        assert pg.locator('article h1').count() == 1, '卡片应能点进详情页'
 
         assert not errs, errs
         print('SMOKE PASS')

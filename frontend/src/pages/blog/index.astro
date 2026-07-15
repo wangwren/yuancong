@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteNav from '../../components/SiteNav.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const tags = ['全部', 'MySQL', 'Redis', 'Java', '场景题'];
+---
+
+<BaseLayout title="博客 — yuancong.ai" description="小从的技术笔记：MySQL、Redis、Java 并发与线上场景题。">
+  <div class="page">
+    <SiteNav />
+    <header class="blog-head">
+      <h1>博客</h1>
+      <p>写服务端这些年攒下的笔记，先从一批面试题整理开始。也可以 <a href="/rss.xml">RSS 订阅</a>。</p>
+    </header>
+    <div class="tagbar" role="group" aria-label="按标签筛选">
+      {tags.map((t) => <button class="pill" data-tag={t}>{t}</button>)}
+    </div>
+    <div class="posts">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-head { margin: 1.2rem 0 1.6rem; }
+  .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  .blog-head p { margin: 0; color: var(--a-muted); }
+  .blog-head a { color: var(--a-primary); font-weight: 700; text-decoration: none; }
+  .blog-head a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  .tagbar { display: flex; flex-wrap: wrap; gap: .7rem; margin-bottom: 1.8rem; }
+  .pill {
+    font: inherit; font-size: .86rem; font-weight: 700;
+    color: var(--a-ink); background: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: 999px;
+    padding: .3em 1em; box-shadow: 0 3px 0 var(--a-ink); cursor: pointer;
+    transition: transform .15s cubic-bezier(.2,.7,.3,1.4), box-shadow .15s ease,
+                background-color .2s, color .2s;
+  }
+  .pill:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--a-ink); }
+  .pill.on { background: var(--a-primary); color: var(--a-bg); transform: translateY(1px); box-shadow: 0 2px 0 var(--a-ink); }
+  .posts { display: grid; grid-template-columns: 1fr; gap: 1.4rem; padding-bottom: 3rem; }
+  @media (min-width: 820px) { .posts { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
+  .posts :global(.post.hide) { display: none; }
+</style>
+
+<script>
+  // 标签就地筛选 + URL hash 同步（分享/刷新保持筛选态）
+  const pills = Array.from(document.querySelectorAll<HTMLButtonElement>('.tagbar .pill'));
+  const cards = Array.from(document.querySelectorAll<HTMLAnchorElement>('.posts .post'));
+  function apply(tag: string) {
+    pills.forEach((p) => p.classList.toggle('on', p.dataset.tag === tag));
+    cards.forEach((c) => {
+      const hit = tag === '全部' || (c.dataset.tags || '').split(',').includes(tag);
+      c.classList.toggle('hide', !hit);
+    });
+    history.replaceState(null, '', tag === '全部' ? location.pathname : '#' + encodeURIComponent(tag));
+  }
+  pills.forEach((p) => p.addEventListener('click', () => apply(p.dataset.tag!)));
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  apply(pills.some((p) => p.dataset.tag === fromHash) ? fromHash : '全部');
+</script>

@@ -1,0 +1,47 @@
+---
+// 文章卡片：主页「最近在写」与 /blog 列表页共用。
+// 外层命中区（a.post）静止不动，动画只发生在内层——避免 hover 位移抖动。
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { post: CollectionEntry<'blog'> }
+const { post } = Astro.props;
+const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+---
+
+<a class="post" href={`/blog/${post.id}/`} data-tags={post.data.tags.join(',')}>
+  <span class="post-in">
+    <span class="t">{post.data.title}</span>
+    <p class="ex">{post.data.description}</p>
+    <span class="meta">
+      {post.data.tags[0] && <span class="tag">{post.data.tags[0]}</span>}
+      <time>{fmt(post.data.pubDate)}</time>
+    </span>
+  </span>
+</a>
+
+<style>
+  .post { display: block; text-decoration: none; }
+  .post-in {
+    display: flex; flex-direction: column; gap: .45rem; height: 100%;
+    border: 3px solid var(--a-ink); border-radius: 1.2rem;
+    padding: 1.25rem 1.4rem; background: var(--a-bg);
+    box-shadow: 0 4px 0 var(--a-ink);
+    transition: transform .18s cubic-bezier(.2,.7,.3,1.4), box-shadow .18s ease,
+                background-color .35s, border-color .35s;
+  }
+  .post:hover .post-in { transform: translateY(-4px) rotate(-1deg); box-shadow: 0 9px 0 var(--a-ink); }
+  .post:nth-child(even):hover .post-in { transform: translateY(-4px) rotate(1deg); }
+  .post .t { font-weight: 700; font-size: 1.08rem; line-height: 1.4; }
+  .post:hover .t { color: var(--a-primary); }
+  .post .ex { margin: 0; color: var(--a-muted); font-size: .9rem; }
+  .post .meta { display: flex; align-items: center; gap: .6rem; margin-top: .3rem; }
+  .post time {
+    margin-left: auto; color: var(--a-muted); font-size: .8rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .tag {
+    font-size: .68rem; font-weight: 700; letter-spacing: .03em;
+    background: var(--a-chip); color: var(--a-chip-ink);
+    border-radius: 999px; padding: .14em .65em;
+  }
+</style>

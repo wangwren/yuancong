@@ -1,32 +1,20 @@
 ---
-// 「最近在写」：构建时从 blog 集合取最新文章渲染双列硬阴影卡片。
-// P1 无文章详情页：卡片与「全部文章」渲染为不可点的 span，P2 换回链接。
+// 「最近在写」：构建时从 blog 集合取最新 4 篇。P2 起卡片可点进详情。
 import { getCollection } from 'astro:content';
+import PostCard from './PostCard.astro';
 
 const posts = (await getCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 4);
-const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 ---
 
 <section class="writing rise" style="--d:340ms">
   <div class="block-head">
     <h2><span class="dot"></span><span>最近在写</span></h2>
-    <span class="more">全部文章 →</span>
+    <a class="more" href="/blog/">全部文章 →</a>
   </div>
   <div class="posts">
-    {posts.map((post) => (
-      <span class="post">
-        <span class="post-in">
-          <span class="t">{post.data.title}</span>
-          <p class="ex">{post.data.description}</p>
-          <span class="meta">
-            {post.data.tags[0] && <span class="tag">{post.data.tags[0]}</span>}
-            <time>{fmt(post.data.pubDate)}</time>
-          </span>
-        </span>
-      </span>
-    ))}
+    {posts.map((post) => <PostCard post={post} />)}
   </div>
 </section>
 
@@ -37,33 +25,9 @@ const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
   .block-head .dot { width: .62em; height: .62em; border-radius: 50%; background: var(--a-primary); flex-shrink: 0; }
   .block-head .more {
     margin-left: auto; font-size: .86rem; font-weight: 700;
-    color: var(--a-primary);
+    color: var(--a-primary); text-decoration: none;
   }
+  .block-head .more:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
   .posts { display: grid; grid-template-columns: 1fr; gap: 1.4rem; }
   @media (min-width: 820px) { .posts { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
-  /* 命中区域（外层）静止不动，动画只发生在内层 —— 避免 hover 位移抖动 */
-  .post { display: block; text-decoration: none; }
-  .post-in {
-    display: flex; flex-direction: column; gap: .45rem; height: 100%;
-    border: 3px solid var(--a-ink); border-radius: 1.2rem;
-    padding: 1.25rem 1.4rem; background: var(--a-bg);
-    box-shadow: 0 4px 0 var(--a-ink);
-    transition: transform .18s cubic-bezier(.2,.7,.3,1.4), box-shadow .18s ease,
-                background-color .35s, border-color .35s;
-  }
-  .post:hover .post-in { transform: translateY(-4px) rotate(-1deg); box-shadow: 0 9px 0 var(--a-ink); }
-  .post:nth-child(even):hover .post-in { transform: translateY(-4px) rotate(1deg); }
-  .post .t { font-weight: 700; font-size: 1.08rem; line-height: 1.4; }
-  .post:hover .t { color: var(--a-primary); }
-  .post .ex { margin: 0; color: var(--a-muted); font-size: .9rem; }
-  .post .meta { display: flex; align-items: center; gap: .6rem; margin-top: .3rem; }
-  .post time {
-    margin-left: auto; color: var(--a-muted); font-size: .8rem;
-    font-variant-numeric: tabular-nums;
-  }
-  .tag {
-    font-size: .68rem; font-weight: 700; letter-spacing: .03em;
-    background: var(--a-chip); color: var(--a-chip-ink);
-    border-radius: 999px; padding: .14em .65em;
-  }
 </style>
