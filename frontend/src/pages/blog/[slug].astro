@@ -5,6 +5,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import TocNav from '../../components/TocNav.astro';
 import SeriesNav from '../../components/SeriesNav.astro';
 import { seriesOf } from '../../lib/series';
+import { readingMinutes } from '../../lib/reading-time';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -32,11 +33,7 @@ const seriesPosts = series
       .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf())
   : [];
 
-// 阅读时长：中文按字（CJK 逐字）、英文按词，350 字/分 + 200 词/分
-const raw = post.body ?? '';
-const cjk = (raw.match(/[一-鿿]/g) ?? []).length;
-const latinWords = (raw.match(/[a-zA-Z0-9]+/g) ?? []).length;
-const readMinutes = Math.max(1, Math.round(cjk / 350 + latinWords / 200));
+const readMinutes = readingMinutes(post.body ?? '');
 ---
 
 <BaseLayout title={`${post.data.title} — yuancong.ai`} description={post.data.description}>

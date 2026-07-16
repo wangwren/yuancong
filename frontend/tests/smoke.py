@@ -22,6 +22,13 @@ def tag_count(tag, sub=''):
         if m and tag in [t.strip() for t in m.group(1).split(',')]:
             n += 1
     return n
+def read_minutes(path):
+    # 与站点 reading-time 同公式的测试侧对拍实现：CJK/350 + 英文词/200，保底 1。
+    # frontmatter 不计入（Astro 的 post.body 不含 frontmatter）
+    body = re.sub(r'^---\n.*?\n---\n', '', open(path, encoding='utf-8').read(), flags=re.S)
+    cjk = len(re.findall(r'[一-鿿]', body))
+    latin = len(re.findall(r'[a-zA-Z0-9]+', body))
+    return max(1, int(cjk / 350 + latin / 200 + 0.5))
 N_ALL = len(md_files())
 N_INTERVIEW = len(md_files('面试小题'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
@@ -230,6 +237,9 @@ try:
         # --- P2 博客：详情页 ---
         pg.goto(URL + 'blog/mysql-interview-notes/')
         assert pg.locator('article h1').inner_text().strip() == 'MySQL 面试笔记'
+        exp_min = read_minutes(os.path.join(CONTENT, '面试小题', 'mysql-interview-notes.md'))
+        got_min = pg.locator('.post-head .stat').inner_text()
+        assert got_min == f'{exp_min} min read', f'详情页时长应 {exp_min} min read，实际 {got_min}'
         assert pg.locator('.prose .astro-code').count() >= 5, '应有 Shiki 代码块（该篇原文 10 个）'
         # TOC 断点 1440px：默认 1280 视口下 details 被脚本收起（此处验证收起态），
         # 展开态必须在宽视口页面上验证——count() 数 DOM 不分辨 details 开合，光数数会退化成假断言
