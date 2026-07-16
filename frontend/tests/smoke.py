@@ -36,7 +36,7 @@ def new_count(days=30):
         m = re.search(r'^pubDate:\s*(\S+)', open(f, encoding='utf-8').read(), re.M)
         if m:
             ts = calendar.timegm(time.strptime(m.group(1), '%Y-%m-%d'))
-            if time.time() - ts <= days * 86400:
+            if 0 <= time.time() - ts <= days * 86400:
                 n += 1
     return n
 N_ALL = len(md_files())
