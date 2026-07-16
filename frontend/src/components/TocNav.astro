@@ -1,6 +1,6 @@
 ---
-// 文章目录：depth 2-4 的标题列表。宽屏（≥1620px）悬浮在容器右缘外常开，
-// 更窄视口由 [slug].astro 里的脚本收起为顶部折叠条。
+// 文章目录：depth 2-4 的标题列表。宽屏（≥1440px）悬浮在文章纸右缘外常开，
+// 更窄视口由 [slug].astro 里的脚本收起为纸内顶部折叠条。
 import type { MarkdownHeading } from 'astro';
 
 interface Props { headings: MarkdownHeading[] }
@@ -19,12 +19,12 @@ const { headings } = Astro.props;
 </details>
 
 <style>
+  /* 折叠态在纸内，走安静样式（细线框、无阴影），不与正文抢视觉重量 */
   .toc {
-    border: 3px solid var(--a-ink); border-radius: 1.2rem;
-    background: var(--a-bg); box-shadow: 0 4px 0 var(--a-ink);
-    padding: .9rem 1.1rem; font-size: .84rem;
+    border: 2px solid var(--a-line); border-radius: .9rem;
+    padding: .6rem .95rem; font-size: .84rem;
   }
-  summary { font-weight: 700; cursor: pointer; }
+  summary { font-weight: 700; cursor: pointer; color: var(--a-muted); }
   nav { margin-top: .5rem; }
   ul { list-style: none; margin: 0; padding: 0; }
   li { margin: .3em 0; line-height: 1.4; }
@@ -32,14 +32,45 @@ const { headings } = Astro.props;
   li.d4 { padding-left: 1.8em; }
   a { color: var(--a-muted); text-decoration: none; display: block; }
   a:hover { color: var(--a-primary); }
-  /* 宽屏：悬浮到 68.75rem 容器右缘外的空白区，正文不让位。
-     容器半宽 34.375rem + 1rem 间距，栏宽 15rem → 需视口 ≥ 约 1612px */
-  @media (min-width: 1620px) {
+  a.now { color: var(--a-primary); font-weight: 700; }  /* 阅读位置联动高亮 */
+  /* 宽屏：悬浮到 57rem 文章纸右缘外的页底空白区，正文不让位；描边阴影比纸低一档。
+     纸半宽 28.5rem + 1rem 间距，栏宽 14.5rem → 右缘在 50%+44rem，需视口 ≥ 约 1423px */
+  @media (min-width: 1440px) {
     .toc {
-      position: fixed; top: 6.5rem;
-      left: calc(50% + 35.375rem); width: 15rem;
-      max-height: calc(100vh - 8.5rem); overflow-y: auto;
+      position: fixed; top: 9.5rem;   /* 与文章纸顶边平齐 */
+      left: calc(50% + 29.5rem); width: 14.5rem;
+      max-height: calc(100vh - 11.5rem); overflow-y: auto;
+      background: var(--a-bg);
+      border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
+      padding: .9rem 1.1rem;
     }
-    summary { pointer-events: none; }  /* 宽屏常开，不给折叠 */
+    summary { pointer-events: none; color: var(--a-ink); }  /* 宽屏常开，不给折叠 */
   }
 </style>
+
+<script>
+  // 阅读位置联动：视口顶下 120px 作为阅读线，高亮最后一个越过它的标题。
+  // 用 scroll + rAF 而非 IntersectionObserver：长段落中标题都不在视口时 IO 不发新事件，
+  // 需要额外记忆状态才能对；直接扫标题位置（每篇至多几十个）逻辑直白且始终正确
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('.toc nav a'));
+  const heads = links
+    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+    .filter((el): el is HTMLElement => el !== null);
+  let ticking = false;
+  function spy() {
+    ticking = false;
+    let cur = -1;
+    for (let i = 0; i < heads.length; i++) {
+      if (heads[i].getBoundingClientRect().top <= 120) cur = i;
+    }
+    links.forEach((a, i) => {
+      a.classList.toggle('now', i === cur);
+      if (i === cur) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+  addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+  spy();
+</script>

@@ -21,6 +21,7 @@
   --a-chip-ink: hsl(210 60% 32%);
   --a-hover-wash: hsl(200 90% 93%);
   --a-line: hsl(225 15% 90%);
+  --a-page: hsl(222 30% 96.5%);
   --worm: hsl(140 45% 32%);
   --bfly-wing: hsl(240 95% 62% / .75);
   --bfly-wing2: hsl(333 100% 45% / .7);
@@ -38,6 +39,7 @@ html.dark {
   --a-chip-ink: hsl(210 60% 78%);
   --a-hover-wash: hsl(222 35% 16%);
   --a-line: hsl(222 15% 20%);
+  --a-page: hsl(224 30% 6%);
   --worm: hsl(140 50% 56%);
   --bfly-wing: hsl(52 100% 72% / .8);
   --bfly-wing2: hsl(38 100% 62% / .7);
@@ -53,6 +55,15 @@ html:not(.dark) body.sky-dusk { --a-sky: hsl(276 60% 89%); --a-cloud: hsl(300 45
 
 /* ============ 基础 ============ */
 * { box-sizing: border-box; }
+/* 跨页柔和过渡：浏览器原生 cross-document view transition（默认约 0.25s 交叉淡入），
+   MPA 语义不变、脚本不受影响；不支持的浏览器自然回退为直接跳转 */
+@view-transition { navigation: auto; }
+/* 锚点跳转（TOC 点击等）平滑滚动 */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  html { scroll-behavior: auto; }
+}
 body {
   margin: 0;
   background: var(--a-bg);
@@ -86,20 +97,33 @@ a, h1, p, footer, .post-in, .mail-in, .action {
 @keyframes a-rise { from { opacity: 0; transform: translateY(1.2rem); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
 
-/* ---- 博客正文（P2） ---- */
+/* ---- 博客正文（P2） ----
+   层级节奏：标题间距「上大下小」把内容分组归到所属标题下；
+   h2/h3/h4 统一左侧圆角竖条锚点，粗细高度随字号递减（2026-07-15 小从定稿，
+   短横条/等长线/荧光块方案均被否）——存量文章有 h2+h3、h2+h4、纯 h4
+   三种结构，每级都必须区别于加粗正文 */
 .prose { min-width: 0; line-height: 1.7; }
 .prose p { margin: .85em 0; }
-.prose h2, .prose h3, .prose h4 { line-height: 1.4; margin: 1.6em 0 .55em; scroll-margin-top: 1.5rem; }
-.prose h2 { font-size: 1.35rem; padding-bottom: .35em; border-bottom: 3px solid var(--a-line); }
-.prose h3 { font-size: 1.15rem; }
-.prose h4 { font-size: 1.02rem; }
+.prose h2, .prose h3, .prose h4 { line-height: 1.4; scroll-margin-top: 1.5rem; }
+.prose h2 { font-size: 1.42rem; margin: 2.1em 0 .7em; }
+.prose h3 { font-size: 1.22rem; margin: 1.8em 0 .55em; }
+.prose h4 { font-size: 1.06rem; margin: 1.5em 0 .5em; }
+.prose h2::before, .prose h3::before, .prose h4::before {
+  content: ''; display: inline-block; vertical-align: -.12em;
+  width: .26em; height: 1em; border-radius: 99px;
+  background: var(--a-primary); margin-right: .45em;
+}
+.prose h2::before { width: .3em; height: 1.05em; }
+.prose > :first-child { margin-top: 0; }
 .prose ul, .prose ol { margin: .85em 0; padding-left: 1.4em; }
 .prose li { margin: .25em 0; }
 .prose li > ul, .prose li > ol { margin: .25em 0; }
+/* 图片/代码块降一档描边阴影：文章纸是页面最重的一层（3px + 硬阴影），
+   纸内元素不与之抢重量，否则眼睛被盒子拽走、聚焦不到文字 */
 .prose img {
   max-width: 100%; height: auto;
-  border: 3px solid var(--a-ink); border-radius: 1rem;
-  box-shadow: 0 4px 0 var(--a-ink);
+  border: 2px solid var(--a-ink); border-radius: .8rem;
+  box-shadow: 0 3px 0 var(--a-ink);
 }
 .prose blockquote {
   margin: 1em 0; padding: .4em 1.1em;
@@ -114,7 +138,7 @@ a, h1, p, footer, .post-in, .mail-in, .action {
   border-radius: .35em; padding: .1em .4em; font-size: .88em;
 }
 .prose .astro-code {
-  border: 3px solid var(--a-ink); border-radius: 1rem;
+  border: 2px solid var(--a-ink); border-radius: .8rem;
   padding: .9rem 1.05rem; margin: 1em 0; font-size: .86rem; line-height: 1.6;
 }
 /* Shiki 双主题：深色时启用 --shiki-dark 系变量（官方推荐写法，站点用 html.dark 开关） */

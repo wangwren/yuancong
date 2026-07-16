@@ -1,0 +1,50 @@
+---
+// 「本系列」导航：文章属于系列时渲染在纸内文末（读完顺势读下一篇），
+// ≥1440px 悬浮到纸左缘外，与右侧 TOC 对称，同为降档安静样式。
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  name: string;                      // 系列显示名
+  posts: CollectionEntry<'blog'>[];  // 同系列全部文章（含当前篇，按发布升序）
+  currentId: string;
+}
+const { name, posts, currentId } = Astro.props;
+---
+
+<nav class="series" aria-label={`系列：${name}`}>
+  <p class="s-head">本系列 · {name}</p>
+  <ol>
+    {posts.map((p) => (
+      <li>
+        {p.id === currentId
+          ? <span aria-current="page">{p.data.title}</span>
+          : <a href={`/blog/${p.id}/`}>{p.data.title}</a>}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .series {
+    margin-top: 2.6rem; padding: .9rem 1.2rem;
+    border: 2px solid var(--a-line); border-radius: .9rem;
+    font-size: .88rem;
+  }
+  .s-head { margin: 0 0 .5rem; font-weight: 700; }
+  ol { margin: 0; padding-left: 1.4em; }
+  li { margin: .35em 0; line-height: 1.45; }
+  a { color: var(--a-muted); text-decoration: none; }
+  a:hover { color: var(--a-primary); }
+  span[aria-current] { font-weight: 700; }
+  /* 宽屏：悬浮到纸左缘外的页底空白区，位置与右侧 TOC 镜像 */
+  @media (min-width: 1440px) {
+    .series {
+      position: fixed; top: 9.5rem;
+      right: calc(50% + 29.5rem); width: 14.5rem;
+      max-height: calc(100vh - 11.5rem); overflow-y: auto;
+      margin-top: 0; padding: .9rem 1.1rem; font-size: .84rem;
+      background: var(--a-bg);
+      border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
+    }
+  }
+</style>

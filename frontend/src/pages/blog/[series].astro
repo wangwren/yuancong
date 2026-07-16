@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogList from '../../components/BlogList.astro';
+import { seriesOf } from '../../lib/series';
+
+export async function getStaticPaths() {
+  const all = await getCollection('blog');
+  const keys = [...new Set(all.map(seriesOf).filter((s): s is string => s !== null))];
+  return keys.map((key) => ({ params: { series: key } }));
+}
+
+const { series } = Astro.params;
+const posts = (await getCollection('blog'))
+  .filter((p) => seriesOf(p) === series)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title={`${series} — 博客 — yuancong.ai`} description={`系列「${series}」的全部文章。`}>
+  <BlogList posts={posts} active={series} />
+</BaseLayout>

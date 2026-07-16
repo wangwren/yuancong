@@ -1,0 +1,98 @@
+---
+// 博客列表主体：系列导航 + 标签筛选 + 卡片网格（/blog/ 与各系列页共用）。
+// 系列导航要列出全站所有系列（本页 posts 可能已按系列过滤），故自行取全量集合。
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import SiteNav from './SiteNav.astro';
+import PostCard from './PostCard.astro';
+import { seriesOf } from '../lib/series';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];  // 本页展示的文章（已排序）
+  active: string | null;             // 当前系列 key；null = 全部文章
+}
+const { posts, active } = Astro.props;
+
+const all = await getCollection('blog');
+// 目录名即系列名，中英混排按中文习惯排序（英文字母在前、中文按拼音）
+const navSeries = [...new Set(all.map(seriesOf).filter((s): s is string => s !== null))]
+  .sort((a, b) => a.localeCompare(b, 'zh-CN'));
+
+// 标签取自本页文章，按出现频次排序（系列页只出现该系列用到的标签）
+const freq = new Map<string, number>();
+for (const p of posts) for (const t of p.data.tags) freq.set(t, (freq.get(t) ?? 0) + 1);
+const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t)];
+---
+
+<div class="page">
+  <SiteNav />
+  <header class="blog-head">
+    <h1>博客</h1>
+    <p>写服务端这些年攒下的笔记，先从一批面试题整理开始。也可以 <a href="/rss.xml">RSS 订阅</a>。</p>
+  </header>
+  {navSeries.length > 0 && (
+    <nav class="series-bar" aria-label="按系列浏览">
+      <a href="/blog/" aria-current={active === null ? 'page' : undefined}>全部文章</a>
+      {navSeries.map((s) => (
+        <a href={`/blog/${encodeURIComponent(s)}/`} aria-current={active === s ? 'page' : undefined}>{s}</a>
+      ))}
+    </nav>
+  )}
+  <div class="tagbar" role="group" aria-label="按标签筛选">
+    {tags.map((t) => <button class="pill" data-tag={t}>{t}</button>)}
+  </div>
+  <div class="posts">
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+</div>
+
+<style>
+  .blog-head { margin: 1.2rem 0 1.6rem; }
+  .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  .blog-head p { margin: 0; color: var(--a-muted); }
+  .blog-head a { color: var(--a-primary); font-weight: 700; text-decoration: none; }
+  .blog-head a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  /* 系列是一级导航（tab 式下划线，同 h2 色条语言），标签是二级筛选（胶囊） */
+  .series-bar {
+    display: flex; flex-wrap: wrap; gap: 1.6rem;
+    margin-bottom: 1.3rem; font-size: .98rem; font-weight: 700;
+  }
+  .series-bar a {
+    color: var(--a-muted); text-decoration: none;
+    padding-bottom: .18em; border-bottom: 3px solid transparent;
+    transition: color .2s;
+  }
+  .series-bar a:hover { color: var(--a-primary); }
+  .series-bar a[aria-current="page"] { color: var(--a-ink); border-bottom-color: var(--a-primary); }
+  .tagbar { display: flex; flex-wrap: wrap; gap: .7rem; margin-bottom: 1.8rem; }
+  .pill {
+    font: inherit; font-size: .86rem; font-weight: 700;
+    color: var(--a-ink); background: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: 999px;
+    padding: .3em 1em; box-shadow: 0 3px 0 var(--a-ink); cursor: pointer;
+    transition: transform .15s cubic-bezier(.2,.7,.3,1.4), box-shadow .15s ease,
+                background-color .2s, color .2s;
+  }
+  .pill:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--a-ink); }
+  .pill.on { background: var(--a-primary); color: var(--a-bg); transform: translateY(1px); box-shadow: 0 2px 0 var(--a-ink); }
+  .posts { display: grid; grid-template-columns: 1fr; gap: 1.4rem; padding-bottom: 3rem; }
+  @media (min-width: 820px) { .posts { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
+  .posts :global(.post.hide) { display: none; }
+</style>
+
+<script>
+  // 标签就地筛选 + URL hash 同步（分享/刷新保持筛选态）
+  const pills = Array.from(document.querySelectorAll<HTMLButtonElement>('.tagbar .pill'));
+  const cards = Array.from(document.querySelectorAll<HTMLAnchorElement>('.posts .post'));
+  function apply(tag: string) {
+    pills.forEach((p) => p.classList.toggle('on', p.dataset.tag === tag));
+    cards.forEach((c) => {
+      const hit = tag === '全部' || (c.dataset.tags || '').split(',').includes(tag);
+      c.classList.toggle('hide', !hit);
+    });
+    history.replaceState(null, '', tag === '全部' ? location.pathname : '#' + encodeURIComponent(tag));
+  }
+  pills.forEach((p) => p.addEventListener('click', () => apply(p.dataset.tag!)));
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  apply(pills.some((p) => p.dataset.tag === fromHash) ? fromHash : '全部');
+</script>

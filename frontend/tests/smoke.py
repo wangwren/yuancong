@@ -3,9 +3,25 @@
 线上回归：TARGET_URL=https://yuancong.ai/ python3 tests/smoke.py（不起本地服务）
 """
 from playwright.sync_api import sync_playwright
-import socket, subprocess, time, os, urllib.parse
+import socket, subprocess, time, os, re, urllib.parse
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+
+# 篇数/标签数从内容目录动态推导——小从的工作流是「扔 md 就推」，
+# 写死数字会在每次发文后误报（2026-07-15 因新增测试文章实际踩中）
+CONTENT = os.path.join(ROOT, 'src', 'content', 'blog')
+def md_files(sub=''):
+    base = os.path.join(CONTENT, sub) if sub else CONTENT
+    return [os.path.join(dp, f) for dp, _, fs in os.walk(base) for f in fs if f.endswith('.md')]
+def tag_count(tag):
+    n = 0
+    for f in md_files():
+        m = re.search(r'^tags:\s*\[(.*?)\]', open(f, encoding='utf-8').read(), re.M)
+        if m and tag in [t.strip() for t in m.group(1).split(',')]:
+            n += 1
+    return n
+N_ALL = len(md_files())
+N_INTERVIEW = len(md_files('面试小题'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
 # 测试会连上 dev server（源码）而非 dist 构建产物，静默测错目标
 PORT = 4322
@@ -213,14 +229,14 @@ try:
         pg.goto(URL + 'blog/mysql-interview-notes/')
         assert pg.locator('article h1').inner_text().strip() == 'MySQL 面试笔记'
         assert pg.locator('.prose .astro-code').count() >= 5, '应有 Shiki 代码块（该篇原文 10 个）'
-        # TOC 断点 1620px：默认 1280 视口下 details 被脚本收起（此处验证收起态），
+        # TOC 断点 1440px：默认 1280 视口下 details 被脚本收起（此处验证收起态），
         # 展开态必须在宽视口页面上验证——count() 数 DOM 不分辨 details 开合，光数数会退化成假断言
         assert pg.locator('details.toc:not([open])').count() == 1, '窄屏 TOC 应默认收起为顶部条'
         pgT = browser.new_page(viewport={'width': 1680, 'height': 1000})
         pgT.add_init_script(
             "if (!localStorage.getItem('theme')) localStorage.setItem('theme','light');")
         pgT.goto(URL + 'blog/mysql-interview-notes/')
-        assert pgT.locator('details.toc[open]').count() == 1, '宽屏（≥1620px）TOC 应默认展开'
+        assert pgT.locator('details.toc[open]').count() == 1, '宽屏（≥1440px）TOC 应默认展开'
         assert pgT.locator('.toc nav a').count() >= 15, 'TOC 条目应与 26 小节同量级'
         assert pgT.locator('.toc nav a').first.is_visible(), 'TOC 条目应真实可见'
         pgT.close()
@@ -239,29 +255,60 @@ try:
 
         # --- P2 博客：列表页与标签筛选 ---
         pg.goto(URL + 'blog/')
-        assert pg.locator('a.post').count() == 10, '列表页应有 10 篇'
+        assert pg.locator('a.post').count() == N_ALL, f'列表页应有 {N_ALL} 篇'
         pg.locator('.tagbar .pill[data-tag="场景题"]').click()
-        assert pg.locator('a.post:not(.hide)').count() == 3, '场景题筛选应剩 3 篇'
+        n_scene = tag_count('场景题')
+        assert pg.locator('a.post:not(.hide)').count() == n_scene, f'场景题筛选应剩 {n_scene} 篇'
         assert '场景题' in urllib.parse.unquote(pg.url), '筛选应同步到 hash'
         pg.locator('.tagbar .pill[data-tag="全部"]').click()
-        assert pg.locator('a.post:not(.hide)').count() == 10, '取消筛选应恢复全量'
+        assert pg.locator('a.post:not(.hide)').count() == N_ALL, '取消筛选应恢复全量'
         # 用新页面验证「直达」：若复用 pg，浏览器把仅 hash 不同的 goto 当同文档导航
         # （不重新执行脚本），并非真实直达场景，会误报
         pgH = browser.new_page()
         pgH.goto(URL + 'blog/#Java')
-        assert pgH.locator('a.post:not(.hide)').count() == 2, 'hash 直达 Java 应只显 2 篇'
+        n_java = tag_count('Java')
+        assert pgH.locator('a.post:not(.hide)').count() == n_java, f'hash 直达 Java 应只显 {n_java} 篇'
         pgH.close()
         # 卡片点进详情
         pg.goto(URL + 'blog/')
         pg.locator('a.post').first.click()
         pg.wait_for_url('**/blog/**')
-        assert pg.locator('article h1').count() == 1, '卡片应能点进详情页'
+        assert pg.locator('.post-head h1').count() == 1, '卡片应能点进详情页'
+
+        # --- P2 博客：系列（物理目录 = 系列，目录名即显示名，中文路径正常转码） ---
+        pg.goto(URL + 'blog/')
+        bar = pg.locator('.series-bar a')
+        assert bar.count() >= 2, '列表页应有系列导航（全部文章 + 至少一个系列）'
+        assert bar.first.inner_text() == '全部文章'
+        assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == '全部文章'
+        pg.goto(URL + 'blog/' + urllib.parse.quote('面试小题') + '/')
+        assert pg.locator('a.post').count() == N_INTERVIEW, f'面试小题系列页应 {N_INTERVIEW} 篇'
+        assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == '面试小题'
+        pg.locator('.tagbar .pill[data-tag="场景题"]').click()
+        assert pg.locator('a.post:not(.hide)').count() == 3, '系列页内标签筛选应照常工作'
+        pg.goto(URL + 'blog/mysql-index/')
+        assert pg.locator('.series li').count() == N_INTERVIEW, f'详情页系列卡应列全同系列 {N_INTERVIEW} 篇'
+        assert pg.locator('.series [aria-current="page"]').inner_text().strip() == 'MySQL 索引相关', \
+            '系列卡应高亮当前篇'
+        assert pg.locator('.series li a').count() == N_INTERVIEW - 1, '系列卡除当前篇外应是链接'
+
+        # --- 详情页：TOC 阅读位置联动（scrollspy） ---
+        assert pg.locator('.toc a.now').count() == 0, '未滚动时（标题区）不应有高亮项'
+        last_slug = pg.locator('.toc nav a').last.get_attribute('href').split('#')[1]
+        pg.evaluate(
+            "slug => document.getElementById(decodeURIComponent(slug))"
+            ".scrollIntoView({behavior:'instant'})", last_slug)
+        pg.wait_for_function(
+            "document.querySelector('.toc a.now')?.getAttribute('href')?.endsWith("
+            f"'#{last_slug}')", timeout=3000)
+        pg.evaluate("window.scrollTo({top: 0, behavior: 'instant'})")
+        pg.wait_for_function("!document.querySelector('.toc a.now')", timeout=3000)
 
         # --- P2：RSS ---
         resp = pg.request.get(URL + 'rss.xml')
         assert resp.status == 200, f'rss.xml 应 200，实际 {resp.status}'
         xml = resp.text()
-        assert xml.count('<item>') == 10, f'RSS 应含 10 篇，实际 {xml.count("<item>")}'
+        assert xml.count('<item>') == N_ALL, f'RSS 应含 {N_ALL} 篇，实际 {xml.count("<item>")}'
         assert '/blog/mysql-interview-notes/' in xml, 'RSS 链接应指向详情页'
         assert '<language>zh-cn</language>' in xml
 
