@@ -13,9 +13,11 @@ CONTENT = os.path.join(ROOT, 'src', 'content', 'blog')
 def md_files(sub=''):
     base = os.path.join(CONTENT, sub) if sub else CONTENT
     return [os.path.join(dp, f) for dp, _, fs in os.walk(base) for f in fs if f.endswith('.md')]
-def tag_count(tag):
+def tag_count(tag, sub=''):
+    # 只认单行不带引号的内联数组（tags: [A, B]）——与现有全部文章的写法一致；
+    # 多行 YAML 列表或带引号写法会少算导致测试红（假失败可排查，非静默通过）
     n = 0
-    for f in md_files():
+    for f in md_files(sub):
         m = re.search(r'^tags:\s*\[(.*?)\]', open(f, encoding='utf-8').read(), re.M)
         if m and tag in [t.strip() for t in m.group(1).split(',')]:
             n += 1
@@ -285,7 +287,8 @@ try:
         assert pg.locator('a.post').count() == N_INTERVIEW, f'面试小题系列页应 {N_INTERVIEW} 篇'
         assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == '面试小题'
         pg.locator('.tagbar .pill[data-tag="场景题"]').click()
-        assert pg.locator('a.post:not(.hide)').count() == 3, '系列页内标签筛选应照常工作'
+        n_scene_s = tag_count('场景题', '面试小题')
+        assert pg.locator('a.post:not(.hide)').count() == n_scene_s, '系列页内标签筛选应照常工作'
         pg.goto(URL + 'blog/mysql-index/')
         assert pg.locator('.series li').count() == N_INTERVIEW, f'详情页系列卡应列全同系列 {N_INTERVIEW} 篇'
         assert pg.locator('.series [aria-current="page"]').inner_text().strip() == 'MySQL 索引相关', \

@@ -52,18 +52,18 @@ const { headings } = Astro.props;
   // 阅读位置联动：视口顶下 120px 作为阅读线，高亮最后一个越过它的标题。
   // 用 scroll + rAF 而非 IntersectionObserver：长段落中标题都不在视口时 IO 不发新事件，
   // 需要额外记忆状态才能对；直接扫标题位置（每篇至多几十个）逻辑直白且始终正确
-  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('.toc nav a'));
-  const heads = links
-    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
-    .filter((el): el is HTMLElement => el !== null);
+  // 链接与标题成对过滤：若某 slug 找不到对应 id，链接与标题分开过滤会整体错位一格
+  const pairs = Array.from(document.querySelectorAll<HTMLAnchorElement>('.toc nav a'))
+    .map((a) => [a, document.getElementById(decodeURIComponent(a.hash.slice(1)))] as const)
+    .filter((p): p is readonly [HTMLAnchorElement, HTMLElement] => p[1] !== null);
   let ticking = false;
   function spy() {
     ticking = false;
     let cur = -1;
-    for (let i = 0; i < heads.length; i++) {
-      if (heads[i].getBoundingClientRect().top <= 120) cur = i;
+    for (let i = 0; i < pairs.length; i++) {
+      if (pairs[i][1].getBoundingClientRect().top <= 120) cur = i;
     }
-    links.forEach((a, i) => {
+    pairs.forEach(([a], i) => {
       a.classList.toggle('now', i === cur);
       if (i === cur) a.setAttribute('aria-current', 'true');
       else a.removeAttribute('aria-current');
