@@ -27,8 +27,7 @@ const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map((
 <div class="page">
   <SiteNav />
   <header class="blog-head">
-    <h1>博客</h1>
-    <p>写服务端这些年攒下的笔记，先从一批面试题整理开始。也可以 <a href="/rss.xml">RSS 订阅</a>。</p>
+    <h1>Blog</h1>
   </header>
   {navSeries.length > 0 && (
     <nav class="series-bar" aria-label="按系列浏览">
@@ -49,9 +48,6 @@ const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map((
 <style>
   .blog-head { margin: 1.2rem 0 1.6rem; }
   .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
-  .blog-head p { margin: 0; color: var(--a-muted); }
-  .blog-head a { color: var(--a-primary); font-weight: 700; text-decoration: none; }
-  .blog-head a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
   /* 系列是一级导航（tab 式下划线，同 h2 色条语言），标签是二级筛选（胶囊） */
   .series-bar {
     display: flex; flex-wrap: wrap; gap: 1.6rem;

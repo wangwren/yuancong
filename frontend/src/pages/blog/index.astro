@@ -7,6 +7,6 @@ const posts = (await getCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<BaseLayout title="博客 — yuancong.ai" description="小从的技术笔记：MySQL、Redis、Java 并发与线上场景题。">
+<BaseLayout title="Blog — yuancong.ai" description="小从的技术笔记：MySQL、Redis、Java 并发与线上场景题。">
   <BlogList posts={posts} active={null} />
 </BaseLayout>

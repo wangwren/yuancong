@@ -16,6 +16,6 @@ const posts = (await getCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<BaseLayout title={`${series} — 博客 — yuancong.ai`} description={`系列「${series}」的全部文章。`}>
+<BaseLayout title={`${series} — Blog — yuancong.ai`} description={`系列「${series}」的全部文章。`}>
   <BlogList posts={posts} active={series} />
 </BaseLayout>

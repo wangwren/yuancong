@@ -267,6 +267,8 @@ try:
 
         # --- P2 博客：列表页与标签筛选 ---
         pg.goto(URL + 'blog/')
+        assert pg.locator('.blog-head h1').inner_text().strip() == 'Blog', '页头应为 Blog'
+        assert pg.locator('.blog-head p').count() == 0, '介绍句应已删除'
         assert pg.locator('a.post').count() == N_ALL, f'列表页应有 {N_ALL} 篇'
         pg.locator('.tagbar .pill[data-tag="场景题"]').click()
         n_scene = tag_count('场景题')
