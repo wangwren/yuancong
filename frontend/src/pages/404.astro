@@ -23,7 +23,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .msg { margin: 0; color: var(--a-muted); max-width: 26em; }
   .home {
     margin-top: .8rem; font-weight: 700; text-decoration: none;
-    color: var(--a-primary);
+    color: var(--a-primary); transition: color .2s;
   }
-  .home:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  .home:hover { color: var(--a-secondary); }
 </style>

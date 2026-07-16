@@ -74,8 +74,8 @@ const readMinutes = readingMinutes(post.body ?? '');
                 box-shadow .35s cubic-bezier(.41,.1,.13,1);
   }
   .back-row { margin: .8rem 0 1.3rem; }
-  .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; }
-  .back:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
+  .back:hover { color: var(--a-secondary); }
   .post-head { margin: 0 0 1.5rem; padding-bottom: 1.1rem; border-bottom: 2px dashed var(--a-line); }
   h1 { margin: 0 0 .45em; font-size: clamp(1.55rem, 3.4vw, 2.25rem); line-height: 1.3; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 0; }
@@ -91,8 +91,8 @@ const readMinutes = readingMinutes(post.body ?? '');
   /* TOC 不占列——宽屏悬浮在纸右侧的页底空白区（见 TocNav），中窄屏折叠在正文顶部 */
   .body-grid { display: grid; gap: 1.2rem; align-items: start; }
   .foot-back { max-width: 57rem; margin: 1.6rem auto 3rem; }
-  .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; }
-  .foot-back a:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
+  .foot-back a:hover { color: var(--a-secondary); }
 </style>
 
 <script>

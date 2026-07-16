@@ -25,9 +25,9 @@ const posts = (await getCollection('blog'))
   .block-head .dot { width: .62em; height: .62em; border-radius: 50%; background: var(--a-primary); flex-shrink: 0; }
   .block-head .more {
     margin-left: auto; font-size: .86rem; font-weight: 700;
-    color: var(--a-primary); text-decoration: none;
+    color: var(--a-primary); text-decoration: none; transition: color .2s;
   }
-  .block-head .more:hover { text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em; }
+  .block-head .more:hover { color: var(--a-secondary); }
   .posts { display: grid; grid-template-columns: 1fr; gap: 1.4rem; }
   @media (min-width: 820px) { .posts { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
 </style>

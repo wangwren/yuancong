@@ -32,10 +32,7 @@ const isNew = age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
   }
   .post:last-child { border-bottom: 0; }
   .t { font-weight: 700; font-size: 1.14rem; line-height: 1.4; }
-  .post:hover .t {
-    color: var(--a-primary);
-    text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em;
-  }
+  .post:hover .t { color: var(--a-primary); }
   .ex { margin: 0; color: var(--a-muted); font-size: .9rem; }
   /* 阅读决策信息（标签+时长）归左，档案信息（日期）推最右——与详情页 meta 同布局 */
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .15rem; }
@@ -47,7 +44,6 @@ const isNew = age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
     background: var(--a-chip); color: var(--a-chip-ink);
     border-radius: 999px; padding: .14em .65em;
   }
-  /* inline-block：隔断 hover 时标题波浪线向徽章内延伸 */
   .new {
     display: inline-block;
     font-size: .62rem; font-weight: 800; letter-spacing: .05em;
