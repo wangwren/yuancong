@@ -4,7 +4,7 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import SiteNav from './SiteNav.astro';
-import PostCard from './PostCard.astro';
+import PostRow from './PostRow.astro';
 import { seriesOf } from '../lib/series';
 
 interface Props {
@@ -41,7 +41,7 @@ const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map((
     {tags.map((t) => <button class="pill" data-tag={t}>{t}</button>)}
   </div>
   <div class="posts">
-    {posts.map((post) => <PostCard post={post} />)}
+    {posts.map((post) => <PostRow post={post} />)}
   </div>
 </div>
 
@@ -71,8 +71,7 @@ const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map((
   }
   .pill:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--a-ink); }
   .pill.on { background: var(--a-primary); color: var(--a-bg); transform: translateY(1px); box-shadow: 0 2px 0 var(--a-ink); }
-  .posts { display: grid; grid-template-columns: 1fr; gap: 1.4rem; padding-bottom: 3rem; }
-  @media (min-width: 820px) { .posts { grid-template-columns: 1fr 1fr; gap: 1.6rem; } }
+  .posts { max-width: 47rem; padding-bottom: 3rem; }
   .posts :global(.post.hide) { display: none; }
 </style>
 

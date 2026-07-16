@@ -3,7 +3,7 @@
 线上回归：TARGET_URL=https://yuancong.ai/ python3 tests/smoke.py（不起本地服务）
 """
 from playwright.sync_api import sync_playwright
-import socket, subprocess, time, os, re, urllib.parse
+import socket, subprocess, time, os, re, urllib.parse, calendar
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
@@ -29,6 +29,16 @@ def read_minutes(path):
     cjk = len(re.findall(r'[一-鿿]', body))
     latin = len(re.findall(r'[a-zA-Z0-9]+', body))
     return max(1, int(cjk / 350 + latin / 200 + 0.5))
+def new_count(days=30):
+    # 与 PostRow 同口径：pubDate（UTC 零点）距今 ≤ days 天；动态推导，不写死
+    n = 0
+    for f in md_files():
+        m = re.search(r'^pubDate:\s*(\S+)', open(f, encoding='utf-8').read(), re.M)
+        if m:
+            ts = calendar.timegm(time.strptime(m.group(1), '%Y-%m-%d'))
+            if time.time() - ts <= days * 86400:
+                n += 1
+    return n
 N_ALL = len(md_files())
 N_INTERVIEW = len(md_files('面试小题'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
@@ -269,6 +279,13 @@ try:
         pg.goto(URL + 'blog/')
         assert pg.locator('.blog-head h1').inner_text().strip() == 'Blog', '页头应为 Blog'
         assert pg.locator('.blog-head p').count() == 0, '介绍句应已删除'
+        assert pg.locator('.posts .stat').count() == N_ALL, '每行应有阅读时长'
+        t0 = pg.locator('.posts time').first.inner_text()
+        assert re.fullmatch(r'\d{4}-\d{2}-\d{2}', t0), f'列表日期应精确到天，实际 {t0}'
+        n_new = new_count()
+        assert pg.locator('.posts .new').count() == n_new, f'NEW 徽章应 {n_new} 枚（30 天内文章数）'
+        xs = pg.locator('a.post').evaluate_all('els => els.map(e => e.getBoundingClientRect().x)')
+        assert len(set(xs)) == 1, f'列表应单列（行左缘全对齐），实际 x 集合 {sorted(set(xs))}'
         assert pg.locator('a.post').count() == N_ALL, f'列表页应有 {N_ALL} 篇'
         pg.locator('.tagbar .pill[data-tag="场景题"]').click()
         n_scene = tag_count('场景题')

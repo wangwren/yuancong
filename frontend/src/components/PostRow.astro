@@ -1,0 +1,57 @@
+---
+// 博客列表行：/blog/ 与系列页专用（主页「最近在写」用的是卡片 PostCard）。
+// 根元素保持 a.post + data-tags，BlogList 的标签筛选脚本与既有测试零改动。
+import type { CollectionEntry } from 'astro:content';
+import { readingMinutes } from '../lib/reading-time';
+
+interface Props { post: CollectionEntry<'blog'> }
+const { post } = Astro.props;
+const fmtDate = post.data.pubDate.toISOString().slice(0, 10);
+const minutes = readingMinutes(post.body ?? '');
+// NEW 判定发生在构建时（纯静态站没有访问时刻）；push 即重建，误差 = 距上次构建的时长
+const isNew = Date.now() - post.data.pubDate.valueOf() <= 30 * 24 * 60 * 60 * 1000;
+---
+
+<a class="post" href={`/blog/${post.id}/`} data-tags={post.data.tags.join(',')}>
+  <span class="t">{post.data.title}{isNew && <span class="new">NEW</span>}</span>
+  <p class="ex">{post.data.description}</p>
+  <span class="meta">
+    {post.data.tags[0] && <span class="tag">{post.data.tags[0]}</span>}
+    <span class="stat">{minutes} min read</span>
+    <time datetime={fmtDate}>{fmtDate}</time>
+  </span>
+</a>
+
+<style>
+  .post {
+    display: flex; flex-direction: column; gap: .4rem;
+    padding: 1.1rem .2rem 1.15rem;
+    border-bottom: 2px dashed var(--a-line);
+    text-decoration: none;
+  }
+  .post:last-child { border-bottom: 0; }
+  .t { font-weight: 700; font-size: 1.14rem; line-height: 1.4; }
+  .post:hover .t {
+    color: var(--a-primary);
+    text-decoration: underline wavy var(--a-secondary) 2px; text-underline-offset: .3em;
+  }
+  .ex { margin: 0; color: var(--a-muted); font-size: .9rem; }
+  /* 阅读决策信息（标签+时长）归左，档案信息（日期）推最右——与详情页 meta 同布局 */
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .15rem; }
+  .stat, .meta time { color: var(--a-muted); font-size: .8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tag + .stat::before { content: '·'; margin-right: .6rem; }  /* 无标签文章不出孤立点号 */
+  .meta time { margin-left: auto; }
+  .tag {
+    font-size: .68rem; font-weight: 700; letter-spacing: .03em;
+    background: var(--a-chip); color: var(--a-chip-ink);
+    border-radius: 999px; padding: .14em .65em;
+  }
+  /* inline-block：隔断 hover 时标题波浪线向徽章内延伸 */
+  .new {
+    display: inline-block;
+    font-size: .62rem; font-weight: 800; letter-spacing: .05em;
+    background: var(--a-chip); color: var(--a-chip-ink);
+    border-radius: 999px; padding: .18em .6em;
+    margin-left: .45em; vertical-align: .12em;
+  }
+</style>
