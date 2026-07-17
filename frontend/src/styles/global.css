@@ -3,7 +3,10 @@
   font-family: 'Baloo 2';
   font-style: normal;
   font-weight: 700;
-  font-display: swap;
+  /* optional 而非 swap：跨页导航字体晚到时 swap 会中途换字，wordmark 宽度跳 ~7px
+     （2026-07-17 实测归因）。optional = 首帧没就绪就整页回退、绝不中途换；
+     配合 head 里的 preload，字体几乎总在首帧前就绪 */
+  font-display: optional;
   src: url(/fonts/baloo-2-latin-700.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+2000-206F, U+2190-2199, U+2212;
 }

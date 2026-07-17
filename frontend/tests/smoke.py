@@ -224,6 +224,22 @@ try:
             '存了浅色偏好时夜间不应自动深色'
         pgL.close()
 
+        # --- wordmark 防跳变：字体晚到时整页回退、绝不中途换字（font-display: optional + preload）---
+        # 回归 2026-07-17 修复：swap 语义下字体在首帧后到达会中途换字，字宽跳约 7px，跨页导航肉眼可见
+        pgF = browser.new_page()
+        def _delay_font(route):
+            time.sleep(0.6)
+            route.continue_()
+        pgF.route('**/fonts/*.woff2', _delay_font)
+        pgF.goto(URL + 'blog/')
+        assert pgF.locator('head link[rel="preload"][as="font"]').count() == 1, '字体 preload 应存在'
+        pgF.wait_for_timeout(150)   # 过掉 optional 的 ~100ms 阻塞期，此刻是回退字体
+        w_early = pgF.evaluate("document.querySelector('.wordmark').offsetWidth")
+        pgF.wait_for_timeout(900)   # 字体早已到达——optional 不得再换
+        w_late = pgF.evaluate("document.querySelector('.wordmark').offsetWidth")
+        assert w_early == w_late, f'字体晚到不得中途换字（宽度 {w_early} → {w_late}）'
+        pgF.close()
+
         # --- 404 页：错误路径返回站内 404 页而非裸错误 ---
         pg404 = browser.new_page()
         pg404.goto(URL + 'no-such-page/')
