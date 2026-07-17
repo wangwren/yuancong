@@ -5,6 +5,7 @@ import SiteNav from '../components/SiteNav.astro';
 import Hero from '../components/Hero.astro';
 import RecentPosts from '../components/RecentPosts.astro';
 import ContactCard from '../components/ContactCard.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import Confetti from '../components/Confetti.astro';
 import Crawler from '../components/Crawler.astro';
 ---
@@ -19,19 +20,9 @@ import Crawler from '../components/Crawler.astro';
     <Hero />
     <RecentPosts />
     <ContactCard />
-    <footer>© 2026 <span class="mini"><span class="y">yuan</span> ∘ <span class="c">cong</span></span></footer>
+    <SiteFooter />
   </div>
   <Confetti />
   <Crawler />
 </BaseLayout>
 
-<style>
-  footer {
-    border-top: 1px solid var(--a-line);
-    padding: 1.5rem 0 2rem; text-align: center;
-    color: var(--a-muted); font-size: .82rem; position: relative; z-index: 1;
-  }
-  footer .mini { font-family: "Baloo 2", sans-serif; }
-  footer .mini .y { color: var(--a-secondary); }
-  footer .mini .c { color: var(--a-primary); }
-</style>

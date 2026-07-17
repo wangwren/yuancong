@@ -1,9 +1,13 @@
 ---
 // 全宽天空带：漂云（浅色）+ 星空（深色可见）。天色随访客本地时段：
 // 晨昏改色（body.sky-dawn / body.sky-dusk），夜间自动深色由 BaseLayout 内联脚本负责。
+// height：首页 30rem（默认），内页 15rem 矮版——全站统一「天空 → 内容」结构。
+// 云 / 星最低位在 14rem 内，矮版不裁切。
+interface Props { height?: string }
+const { height = '30rem' } = Astro.props;
 ---
 
-<div class="skyband" aria-hidden="true">
+<div class="skyband" style={`--sky-h: ${height}`} aria-hidden="true">
   <div class="cloud c1"></div>
   <div class="cloud c2"></div>
   <div class="cloud c3"></div>
@@ -24,7 +28,7 @@
 
 <style>
   .skyband {
-    position: absolute; left: 0; right: 0; top: 0; height: 30rem;
+    position: absolute; left: 0; right: 0; top: 0; height: var(--sky-h, 30rem);
     background: linear-gradient(to bottom, var(--a-sky), transparent);
     pointer-events: none; overflow: hidden;
     transition: background .35s cubic-bezier(.41,.1,.13,1);
