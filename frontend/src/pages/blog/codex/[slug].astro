@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content';
+import GuideArticle from '../../../components/GuideArticle.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('guide'))
+    .filter((p) => p.id.startsWith('codex/'))
+    .sort((a, b) => a.id.localeCompare(b.id));  // 文件名编号即阅读顺序
+  return posts.map((post, i) => ({
+    params: { slug: post.id.split('/')[1] },
+    props: { post, prev: posts[i - 1] ?? null, next: posts[i + 1] ?? null },
+  }));
+}
+const { post, prev, next } = Astro.props;
+---
+
+<GuideArticle post={post} prev={prev} next={next} />

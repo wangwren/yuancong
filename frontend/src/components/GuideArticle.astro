@@ -1,0 +1,56 @@
+---
+// Guide 镜像文章页主体：文章纸复用 ArticleLayout，加镜像声明 / 副题 / canonical / 上下篇。
+// canonical 只在这里传——博客页面永不带（硬边界，smoke 双向断言）。
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import { readingMinutes } from '../lib/reading-time';
+import { GUIDE_TOOLS, officialUrl } from '../lib/guide';
+
+interface Props {
+  post: CollectionEntry<'guide'>;
+  prev: CollectionEntry<'guide'> | null;
+  next: CollectionEntry<'guide'> | null;
+}
+const { post, prev, next } = Astro.props;
+const tool = post.id.split('/')[0];
+const label = GUIDE_TOOLS.find((t) => t.key === tool)!.label;
+const { Content, headings } = await render(post);
+const minutes = readingMinutes(post.body ?? '');
+---
+
+<ArticleLayout title={`${post.data.title} — yuancong.ai`} description={post.data.description}
+               canonical={officialUrl(post.id)} backHref={`/blog/${tool}/`} backLabel={label}
+               headings={headings}>
+  <header class="post-head" slot="head">
+    <h1>{post.data.title}</h1>
+    <p class="sub">{post.data.description}</p>
+    <p class="meta">
+      <span class="stat">{minutes} min read</span>
+      <span class="src">镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang/ai-coding-guide</a>（MIT）· <a href={officialUrl(post.id)}>官方阅读站</a></span>
+    </p>
+  </header>
+  <Content />
+  <nav class="pager" slot="foot" aria-label="上一篇 / 下一篇">
+    {prev && <a href={`/blog/${prev.id}/`}>← {prev.data.title}</a>}
+    {next && <a class="next" href={`/blog/${next.id}/`}>{next.data.title} →</a>}
+  </nav>
+</ArticleLayout>
+
+<style>
+  .post-head { margin: 0 0 1.5rem; padding-bottom: 1.1rem; border-bottom: 2px dashed var(--a-line); }
+  h1 { margin: 0 0 .35em; font-size: clamp(1.55rem, 3.4vw, 2.25rem); line-height: 1.3; }
+  .sub { margin: 0 0 .55em; color: var(--a-muted); font-size: .98rem; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 0; font-size: .85rem; color: var(--a-muted); }
+  .stat { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .src a { color: var(--a-primary); font-weight: 700; text-decoration: none; transition: color .2s; }
+  .src a:hover { color: var(--a-secondary); }
+  .pager {
+    display: flex; justify-content: space-between; gap: 1rem;
+    margin-top: 2rem; padding-top: 1.1rem; border-top: 2px dashed var(--a-line);
+    font-size: .92rem; font-weight: 700;
+  }
+  .pager a { color: var(--a-primary); text-decoration: none; transition: color .2s; }
+  .pager a:hover { color: var(--a-secondary); }
+  .pager .next { margin-left: auto; text-align: right; }
+</style>

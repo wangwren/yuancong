@@ -39,6 +39,10 @@ def new_count(days=30):
             if 0 <= time.time() - ts <= days * 86400:
                 n += 1
     return n
+GUIDE = os.path.join(ROOT, 'src', 'content', 'guide')
+def guide_files(tool):
+    d = os.path.join(GUIDE, tool)
+    return sorted(f for f in os.listdir(d) if f.endswith('.md')) if os.path.isdir(d) else []
 N_ALL = len(md_files())
 N_INTERVIEW = len(md_files('面试小题'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
@@ -335,6 +339,39 @@ try:
             f"'#{last_slug}')", timeout=3000)
         pg.evaluate("window.scrollTo({top: 0, behavior: 'instant'})")
         pg.wait_for_function("!document.querySelector('.toc a.now')", timeout=3000)
+
+        # --- Guide 镜像：详情页、canonical 双向硬边界 ---
+        for tool in ('claude-code', 'codex'):
+            gfiles = guide_files(tool)
+            if not gfiles:
+                continue  # 该工具未同步时跳过（试点期允许不齐）
+            slug = gfiles[0][:-3]
+            pg.goto(URL + f'blog/{tool}/{slug}/')
+            canon = pg.locator('head link[rel="canonical"]').get_attribute('href')
+            assert canon == f'https://coding.stormzhang.ai/{tool}/{slug}', f'canonical 应指官方站，实际 {canon}'
+            assert pg.locator('.post-head .sub').count() == 1, '副题应渲染'
+            assert 'stormzhang' in pg.locator('.post-head .src').inner_text(), '镜像声明行应存在'
+            if len(gfiles) > 1:  # 单篇工具（如试点期 codex）首篇即末篇，本就无「下一篇」，非缺陷
+                assert pg.locator('.pager a').count() >= 1, '首篇应至少有「下一篇」'
+        # canonical 硬边界：博客与主页永不带 canonical（小从明确要求，防误伤自有内容）
+        for path in ('', 'blog/', 'blog/mysql-interview-notes/'):
+            pg.goto(URL + path)
+            n = pg.locator('head link[rel="canonical"]').count()
+            assert n == 0, f'/{path} 不应有 canonical，实际 {n} 个'
+        # 镜像正文 R2 图可达（取第一篇含图的已同步文章）
+        img_page = None
+        for tool in ('claude-code', 'codex'):
+            for f in guide_files(tool):
+                if 'img.yuancong.ai/guide' in open(os.path.join(GUIDE, tool, f), encoding='utf-8').read():
+                    img_page = f'blog/{tool}/{f[:-3]}/'
+                    break
+            if img_page:
+                break
+        if img_page:
+            pg.goto(URL + img_page)
+            gsrcs = pg.locator('.prose img').evaluate_all('els => els.map(e => e.src)')
+            assert gsrcs and all('img.yuancong.ai/guide/' in s for s in gsrcs), gsrcs
+            assert pg.request.get(gsrcs[0]).status == 200, '镜像 R2 图应可达'
 
         # --- P2：RSS ---
         resp = pg.request.get(URL + 'rss.xml')
