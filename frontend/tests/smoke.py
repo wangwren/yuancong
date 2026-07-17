@@ -43,6 +43,11 @@ GUIDE = os.path.join(ROOT, 'src', 'content', 'guide')
 def guide_files(tool):
     d = os.path.join(GUIDE, tool)
     return sorted(f for f in os.listdir(d) if f.endswith('.md')) if os.path.isdir(d) else []
+def guide_chapter_count(tool):
+    # 有已同步篇目的章数（chapters.json 是官方站侧栏快照，列表小节头与详情折叠章共用）
+    meta = json.load(open(os.path.join(GUIDE, 'chapters.json'), encoding='utf-8'))[tool]
+    slugs = {f[:-3] for f in guide_files(tool)}
+    return sum(1 for c in meta if slugs & set(c['slugs']))
 N_ALL = len(md_files())
 N_INTERVIEW = len(md_files('面试小题'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
@@ -362,6 +367,8 @@ try:
             pg.goto(URL + f'blog/{tool}/')
             assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == label
             assert pg.locator('.rows .row').count() == len(gfiles), f'{label} 应 {len(gfiles)} 篇'
+            n_chap_l = guide_chapter_count(tool)
+            assert pg.locator('.rows .chap-head').count() == n_chap_l, f'列表页章节头应 {n_chap_l} 个'
             first_t = pg.locator('.rows .row .t').first.inner_text()
             assert first_t.startswith(gfiles[0][:2]), f'应按编号正序，首行 {first_t}'
             notice = pg.locator('.notice').inner_text()
@@ -384,9 +391,7 @@ try:
             if len(gfiles) > 1:  # 单篇工具（如试点期 codex）首篇即末篇，本就无「下一篇」，非缺陷
                 assert pg.locator('.pager a').count() >= 1, '首篇应至少有「下一篇」'
             # 系列导航按章分组（官方站同构，数据 chapters.json）：只展开当前篇所在章
-            chmeta = json.load(open(os.path.join(GUIDE, 'chapters.json'), encoding='utf-8'))[tool]
-            slugs_here = {f[:-3] for f in gfiles}
-            n_chap = sum(1 for c in chmeta if slugs_here & set(c['slugs']))
+            n_chap = guide_chapter_count(tool)
             assert pg.locator('.series details.chap').count() == n_chap, f'章节组应 {n_chap} 个'
             assert pg.locator('.series li').count() == len(gfiles), '章节导航应列全同工具篇目'
             assert pg.locator('.series details[open]').count() == 1, '默认应只展开当前篇所在章'

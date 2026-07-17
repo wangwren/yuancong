@@ -3,7 +3,7 @@
 // 当前篇所在章默认展开、其余收起（同 TOC 的 details 折叠语言）。
 // 卡片壳与定位同博客 SeriesNav：宽屏 ≥1440px 悬浮纸左缘外与右侧 TOC 镜像，窄屏纸内文末。
 import type { CollectionEntry } from 'astro:content';
-import chaptersData from '../content/guide/chapters.json';
+import { chapterGroups } from '../lib/guide';
 
 interface Props {
   name: string;                       // 工具显示名（Claude Code / Codex）
@@ -12,22 +12,7 @@ interface Props {
   currentId: string;
 }
 const { name, tool, posts, currentId } = Astro.props;
-
-type Chapter = { title: string; slugs: string[] };
-const toolChapters = (chaptersData as Record<string, Chapter[]>)[tool];
-if (!toolChapters) throw new Error(`chapters.json 缺少工具「${tool}」的章节映射，请重跑同步脚本`);
-
-const bySlug = new Map(posts.map((p) => [p.id.split('/')[1], p]));
-// 章内只列已同步的篇目，空章不渲染（试点期允许不齐）
-const chapters = toolChapters
-  .map((c) => ({ title: c.title, items: c.slugs.filter((s) => bySlug.has(s)).map((s) => bySlug.get(s)!) }))
-  .filter((c) => c.items.length > 0);
-// 产物与映射对不上说明 content/guide 被手改过——构建期就地报错，别带病上线
-const mappedSlugs = new Set(toolChapters.flatMap((c) => c.slugs));
-const orphan = posts.filter((p) => !mappedSlugs.has(p.id.split('/')[1]));
-if (orphan.length > 0) {
-  throw new Error(`篇目不在章节映射中（content/guide 勿手改，请重跑同步脚本）：${orphan.map((p) => p.id).join(', ')}`);
-}
+const chapters = chapterGroups(tool, posts);
 ---
 
 <nav class="series" aria-label={`系列：${name}`}>
