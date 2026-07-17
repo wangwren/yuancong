@@ -1,9 +1,10 @@
 ---
-// Guide 镜像文章页主体：文章纸复用 ArticleLayout，加镜像声明 / 副题 / canonical / 上下篇。
+// Guide 镜像文章页主体：文章纸复用 ArticleLayout，加镜像声明 / 副题 / canonical / 上下篇 / 系列卡。
 // canonical 只在这里传——博客页面永不带（硬边界，smoke 双向断言）。
 import { render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import ArticleLayout from '../layouts/ArticleLayout.astro';
+import SeriesNav from './SeriesNav.astro';
 import { readingMinutes } from '../lib/reading-time';
 import { GUIDE_TOOLS, officialUrl } from '../lib/guide';
 
@@ -11,8 +12,9 @@ interface Props {
   post: CollectionEntry<'guide'>;
   prev: CollectionEntry<'guide'> | null;
   next: CollectionEntry<'guide'> | null;
+  posts: CollectionEntry<'guide'>[];   // 同工具全部篇目（编号升序），系列卡用
 }
-const { post, prev, next } = Astro.props;
+const { post, prev, next, posts } = Astro.props;
 const tool = post.id.split('/')[0];
 const label = GUIDE_TOOLS.find((t) => t.key === tool)!.label;
 const { Content, headings } = await render(post);
@@ -35,6 +37,7 @@ const minutes = readingMinutes(post.body ?? '');
     {prev && <a href={`/blog/${prev.id}/`}>← {prev.data.title}</a>}
     {next && <a class="next" href={`/blog/${next.id}/`}>{next.data.title} →</a>}
   </nav>
+  <SeriesNav slot="foot" name={label} posts={posts} currentId={post.id} />
 </ArticleLayout>
 
 <style>

@@ -383,6 +383,8 @@ try:
             assert 'stormzhang' in pg.locator('.post-head .src').inner_text(), '镜像声明行应存在'
             if len(gfiles) > 1:  # 单篇工具（如试点期 codex）首篇即末篇，本就无「下一篇」，非缺陷
                 assert pg.locator('.pager a').count() >= 1, '首篇应至少有「下一篇」'
+            assert pg.locator('.series li').count() == len(gfiles), '系列卡应列全同工具篇目'
+            assert pg.locator('.series [aria-current="page"]').count() == 1, '系列卡应高亮当前篇'
         # canonical 硬边界：博客与主页永不带 canonical（小从明确要求，防误伤自有内容）
         for path in ('', 'blog/', 'blog/mysql-interview-notes/', 'blog/claude-code/', 'blog/codex/'):
             pg.goto(URL + path)

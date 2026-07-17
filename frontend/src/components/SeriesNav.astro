@@ -1,11 +1,12 @@
 ---
 // 「本系列」导航：文章属于系列时渲染在纸内文末（读完顺势读下一篇），
 // ≥1440px 悬浮到纸左缘外，与右侧 TOC 对称，同为降档安静样式。
+// blog 系列与 guide 镜像共用：两集合的 /blog/<id>/ 路由形态一致。
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   name: string;                      // 系列显示名
-  posts: CollectionEntry<'blog'>[];  // 同系列全部文章（含当前篇，按发布升序）
+  posts: (CollectionEntry<'blog'> | CollectionEntry<'guide'>)[];  // 同系列全部文章（含当前篇，升序）
   currentId: string;
 }
 const { name, posts, currentId } = Astro.props;

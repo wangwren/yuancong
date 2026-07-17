@@ -8,10 +8,10 @@ export async function getStaticPaths() {
     .sort((a, b) => a.id.localeCompare(b.id));  // 文件名编号即阅读顺序
   return posts.map((post, i) => ({
     params: { slug: post.id.split('/')[1] },
-    props: { post, prev: posts[i - 1] ?? null, next: posts[i + 1] ?? null },
+    props: { post, prev: posts[i - 1] ?? null, next: posts[i + 1] ?? null, posts },
   }));
 }
-const { post, prev, next } = Astro.props;
+const { post, prev, next, posts } = Astro.props;
 ---
 
-<GuideArticle post={post} prev={prev} next={next} />
+<GuideArticle post={post} prev={prev} next={next} posts={posts} />
