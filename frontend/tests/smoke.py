@@ -142,8 +142,19 @@ try:
         assert 'dark' in pg.evaluate("document.documentElement.className")
         pg.reload()
         assert 'dark' in pg.evaluate("document.documentElement.className"), '深色记忆失效'
+        # 画布防闪对拍：BaseLayout 内联的 html 背景必须与 token --a-bg 一致（双主题各验一次），
+        # 内联色写死是为了跨页导航首帧不闪白，token 改色时这里会红提醒同步
+        canvas_probe = ("() => { const d = document.createElement('div');"
+                        " d.style.background = 'var(--a-bg)'; document.body.append(d);"
+                        " const r = [getComputedStyle(d).backgroundColor,"
+                        " getComputedStyle(document.documentElement).backgroundColor];"
+                        " d.remove(); return r; }")
+        got = pg.evaluate(canvas_probe)
+        assert got[0] == got[1], f'深色画布内联色与 --a-bg 漂移：{got}'
         pg.click('#mode')
         assert 'dark' not in pg.evaluate("document.documentElement.className")
+        got = pg.evaluate(canvas_probe)
+        assert got[0] == got[1], f'浅色画布内联色与 --a-bg 漂移：{got}'
 
         # --- 天空带：结构与星星显隐 ---
         assert pg.locator('.cloud').count() == 3

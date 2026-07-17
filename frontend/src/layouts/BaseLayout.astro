@@ -27,6 +27,13 @@ const { title, description, canonical } = Astro.props;
         if (dark) document.documentElement.classList.add('dark');
       })();
     </script>
+    <style is:inline>
+      /* 防闪之二：画布颜色不依赖外部样式表——跨文档导航时新文档 CSS 尚未应用的
+         首帧窗口里，浏览器按 color-scheme 画默认画布，缺省是白色（深色模式下即闪白）。
+         颜色值必须与全局 token --a-bg 保持一致（smoke 有对拍断言防漂移） */
+      html { background: hsl(0 0% 100%); color-scheme: light; }
+      html.dark { background: hsl(223 25% 9%); color-scheme: dark; }
+    </style>
   </head>
   <body>
     <slot />
