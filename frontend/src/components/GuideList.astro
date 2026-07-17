@@ -24,7 +24,7 @@ const posts = (await getCollection('guide'))
   <header class="blog-head"><h1>Blog</h1></header>
   <SeriesBar active={tool} />
   <aside class="notice">
-    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。我是该仓库贡献者之一，此处为存档镜像；在线阅读推荐<a href={officialUrl(tool)}>官方站</a>。最近同步：{syncMeta.syncedAt}
+    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href={officialUrl(tool)}>官方站</a>。最近同步：{syncMeta.syncedAt}
   </aside>
   <div class="rows">
     {posts.map((p) => (
