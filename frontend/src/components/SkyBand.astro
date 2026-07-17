@@ -32,6 +32,10 @@ const { height = '30rem' } = Astro.props;
     background: linear-gradient(to bottom, var(--a-sky), transparent);
     pointer-events: none; overflow: hidden;
     transition: background .35s cubic-bezier(.41,.1,.13,1);
+    /* 底部渐隐遮罩：矮版（15rem）下云的模糊光晕会越过带底被 overflow 硬切出一条横线，
+       让最后 5rem 平滑淡出。30rem 首页带此区间本就近乎全透明，视觉零变化 */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 5rem), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 5rem), transparent);
   }
   .cloud {
     position: absolute; background: var(--a-cloud);
