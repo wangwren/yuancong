@@ -7,6 +7,9 @@ import { readingMinutes } from '../lib/reading-time';
 import { chapterGroups } from '../lib/guide';
 import type { GuideToolKey } from '../lib/guide';
 import '../styles/fold.css';
+import SkyBand from './SkyBand.astro';
+import SiteFooter from './SiteFooter.astro';
+import '../styles/paper.css';
 // 最近同步日期由同步脚本写入（构建期读入，Vite 静态解析 JSON import，
 // 比 readFileSync(new URL(…, import.meta.url)) 更可靠：后者在打包后的
 // chunk 里已不再位于 src/ 同目录，运行时会 ENOENT）
@@ -21,32 +24,41 @@ const posts = (await getCollection('guide'))
 const chapters = chapterGroups(tool, posts);
 ---
 
+<SkyBand height="15rem" />
 <div class="page">
   <SiteNav />
-  <header class="blog-head"><h1>Blog</h1></header>
-  <SeriesBar active={tool} />
-  <aside class="notice">
-    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href="https://coding.stormzhang.ai">官方站</a>。最近同步：{syncMeta.syncedAt}
-  </aside>
-  <div class="rows">
-    {chapters.map((c, i) => (
-      <details class="chap-group fold" open={i === 0 || undefined}>
-        <summary class="chap-head">{c.title}</summary>
-        {c.items.map((p) => (
-          <a class="row" href={`/blog/${p.id}/`}>
-            <span class="t">{p.data.title}</span>
-            <p class="ex">{p.data.description}</p>
-            <span class="meta"><span class="stat">{readingMinutes(p.body ?? '')} min read</span></span>
-          </a>
-        ))}
-      </details>
-    ))}
+  <div class="paper list-paper">
+    <header class="blog-head"><h1>Blog</h1></header>
+    <SeriesBar active={tool} />
+    <aside class="notice">
+      本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href="https://coding.stormzhang.ai">官方站</a>。最近同步：{syncMeta.syncedAt}
+    </aside>
+    <div class="rows">
+      {chapters.map((c, i) => (
+        <details class="chap-group fold" open={i === 0 || undefined}>
+          <summary class="chap-head">{c.title}</summary>
+          {c.items.map((p) => (
+            <a class="row" href={`/blog/${p.id}/`}>
+              <span class="t">{p.data.title}</span>
+              <p class="ex">{p.data.description}</p>
+              <span class="meta"><span class="stat">{readingMinutes(p.body ?? '')} min read</span></span>
+            </a>
+          ))}
+        </details>
+      ))}
+    </div>
   </div>
+  <SiteFooter />
 </div>
 
 <style>
-  .blog-head { margin: 1.2rem 0 1.6rem; }
-  .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  :global(body) { background: var(--a-page); }
+  .list-paper { margin: .6rem auto 2.2rem; }
+  .blog-head { margin: 0 0 1.4rem; }
+  .blog-head h1 {
+    margin: 0; font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-family: "Baloo 2", "PingFang SC", sans-serif;
+  }
   /* 声明块用 prose 引用块同语言（wash 底 + 副色左线），信息级不抢戏 */
   .notice {
     max-width: 47rem; margin: 0 0 1.2rem; padding: .7em 1.1em;
@@ -57,7 +69,7 @@ const chapters = chapterGroups(tool, posts);
   .notice a { color: var(--a-primary); font-weight: 700; text-decoration: none; transition: color .2s; }
   .notice a:hover { color: var(--a-secondary); }
   /* 行式列表同博客列表语言：47rem、虚线分隔、hover 只变主色 */
-  .rows { max-width: 47rem; padding-bottom: 3rem; }
+  .rows { max-width: 47rem; padding-bottom: .4rem; }
   /* 章节小节头：正文 h2 同款左侧圆角竖条语言（标题系统定稿），details 折叠、默认全收起
      （同官方站侧栏交互，一屏看全七章）；原生 marker 隐掉，右侧自绘旋转箭头 */
   .chap-group { margin-top: .9rem; }  /* 开合动画见 styles/fold.css（与详情侧栏共享） */

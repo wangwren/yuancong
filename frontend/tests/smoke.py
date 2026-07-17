@@ -420,6 +420,10 @@ try:
                 pg.locator('.rows .chap-head').nth(1).click()
                 pg.locator('.rows details.chap-group').nth(1).locator('.row .t').first.wait_for(state='visible')
                 assert pg.locator('.rows details.chap-group[open]').count() == 2, '点击章节头应展开'
+            # 全站风格统一：Guide tab 页与 Blog 列表同构（纸内声明块 + 页脚）
+            assert pg.locator('.list-paper .notice').count() == 1, f'{label} 声明块应在纸内'
+            assert pg.locator('.list-paper .rows').count() == 1, f'{label} 章节组应在纸内'
+            assert pg.locator('footer .mini').count() == 1, f'{label} 列表页应有页脚'
             notice = pg.locator('.notice').inner_text()
             assert 'stormzhang' in notice and 'MIT' in notice, '来源声明块应含作者与协议'
             pg.locator('.rows .row').first.click()
