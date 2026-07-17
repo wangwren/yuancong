@@ -372,6 +372,8 @@ try:
             assert pg.locator('.rows details.chap-group[open]').count() == 0, '列表章节应默认全收起'
             pg.locator('.rows .chap-head').first.click()  # 展开第一章，再验行序与可点入
             assert pg.locator('.rows details.chap-group[open]').count() == 1, '点击章节头应展开'
+            # 开合有高度过渡动画，行内容随 content-visibility 渐次可渲染——等可见再读
+            pg.locator('.rows .row .t').first.wait_for(state='visible')
             first_t = pg.locator('.rows .row .t').first.inner_text()
             assert first_t.startswith(gfiles[0][:2]), f'应按编号正序，首行 {first_t}'
             notice = pg.locator('.notice').inner_text()

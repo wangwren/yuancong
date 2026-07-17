@@ -59,7 +59,18 @@ const chapters = chapterGroups(tool, posts);
   .rows { max-width: 47rem; padding-bottom: 3rem; }
   /* 章节小节头：正文 h2 同款左侧圆角竖条语言（标题系统定稿），details 折叠、默认全收起
      （同官方站侧栏交互，一屏看全七章）；原生 marker 隐掉，右侧自绘旋转箭头 */
-  .chap-group { margin-top: .9rem; }
+  .chap-group { margin-top: .9rem; interpolate-size: allow-keywords; }
+  /* 开合高度过渡：原生 ::details-content 方案零 JS，不支持的浏览器退化为直接开合 */
+  .chap-group::details-content {
+    block-size: 0; overflow-y: clip;
+    transition: block-size .28s cubic-bezier(.41,.1,.13,1),
+                content-visibility .28s allow-discrete;
+  }
+  .chap-group[open]::details-content { block-size: auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .chap-group::details-content { transition: none; }
+    .chap-head::after { transition: none; }
+  }
   .chap-head {
     display: flex; align-items: center;
     margin: 0; padding: .45em .2rem;
