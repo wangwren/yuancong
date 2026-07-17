@@ -385,13 +385,16 @@ try:
             assert pg.locator('.rows .row').count() == len(gfiles), f'{label} 应 {len(gfiles)} 篇'
             n_chap_l = guide_chapter_count(tool)
             assert pg.locator('.rows details.chap-group').count() == n_chap_l, f'列表页章节组应 {n_chap_l} 个'
-            assert pg.locator('.rows details.chap-group[open]').count() == 0, '列表章节应默认全收起'
-            pg.locator('.rows .chap-head').first.click()  # 展开第一章，再验行序与可点入
-            assert pg.locator('.rows details.chap-group[open]').count() == 1, '点击章节头应展开'
-            # 开合有高度过渡动画，行内容随 content-visibility 渐次可渲染——等可见再读
-            pg.locator('.rows .row .t').first.wait_for(state='visible')
+            # 默认展开第一章其余收起（首屏不零内容），首章行服务端渲染即可见
+            assert pg.locator('.rows details.chap-group[open]').count() == 1, '应默认只展开第一章'
+            assert pg.locator('.rows details.chap-group').first.get_attribute('open') is not None, \
+                '默认展开的应是第一章'
             first_t = pg.locator('.rows .row .t').first.inner_text()
             assert first_t.startswith(gfiles[0][:2]), f'应按编号正序，首行 {first_t}'
+            if n_chap_l > 1:  # 折叠交互仍可用：点开第二章（动画揭示内容，等可见再断言）
+                pg.locator('.rows .chap-head').nth(1).click()
+                pg.locator('.rows details.chap-group').nth(1).locator('.row .t').first.wait_for(state='visible')
+                assert pg.locator('.rows details.chap-group[open]').count() == 2, '点击章节头应展开'
             notice = pg.locator('.notice').inner_text()
             assert 'stormzhang' in notice and 'MIT' in notice, '来源声明块应含作者与协议'
             pg.locator('.rows .row').first.click()

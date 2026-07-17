@@ -29,8 +29,8 @@ const chapters = chapterGroups(tool, posts);
     本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href="https://coding.stormzhang.ai">官方站</a>。最近同步：{syncMeta.syncedAt}
   </aside>
   <div class="rows">
-    {chapters.map((c) => (
-      <details class="chap-group fold">
+    {chapters.map((c, i) => (
+      <details class="chap-group fold" open={i === 0 || undefined}>
         <summary class="chap-head">{c.title}</summary>
         {c.items.map((p) => (
           <a class="row" href={`/blog/${p.id}/`}>
