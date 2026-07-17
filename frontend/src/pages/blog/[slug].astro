@@ -1,8 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteNav from '../../components/SiteNav.astro';
-import TocNav from '../../components/TocNav.astro';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import SeriesNav from '../../components/SeriesNav.astro';
 import { seriesOf } from '../../lib/series';
 import { readingMinutes } from '../../lib/reading-time';
@@ -26,7 +24,6 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content, headings } = await render(post);
-const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
 const fmtDate = post.data.pubDate.toISOString().slice(0, 10);
 
 // 所属系列与同系列文章（按发布升序 = 阅读顺序）；零散文章不渲染系列卡
@@ -40,46 +37,21 @@ const seriesPosts = series
 const readMinutes = readingMinutes(post.body ?? '');
 ---
 
-<BaseLayout title={`${post.data.title} — yuancong.ai`} description={post.data.description}>
-  <div class="page">
-    <SiteNav />
-    <p class="back-row"><a class="back" href="/blog/">← 全部文章</a></p>
-    <article>
-      <header class="post-head">
-        <h1>{post.data.title}</h1>
-        <p class="meta">
-          {post.data.tags.map((t) => <span class="tag">{t}</span>)}
-          <span class="stat">{readMinutes} min read</span>
-          <time datetime={fmtDate}>{fmtDate}</time>
-        </p>
-      </header>
-      <div class="body-grid">
-        {toc.length > 0 && <TocNav headings={toc} />}
-        <div class="prose"><Content /></div>
-      </div>
-      {series && <SeriesNav name={series} posts={seriesPosts} currentId={post.id} />}
-    </article>
-    <p class="foot-back"><a href="/blog/">← 全部文章</a></p>
-  </div>
-</BaseLayout>
+<ArticleLayout title={`${post.data.title} — yuancong.ai`} description={post.data.description}
+               backHref="/blog/" backLabel="全部文章" headings={headings}>
+  <header class="post-head" slot="head">
+    <h1>{post.data.title}</h1>
+    <p class="meta">
+      {post.data.tags.map((t) => <span class="tag">{t}</span>)}
+      <span class="stat">{readMinutes} min read</span>
+      <time datetime={fmtDate}>{fmtDate}</time>
+    </p>
+  </header>
+  <Content />
+  {series && <SeriesNav slot="foot" name={series} posts={seriesPosts} currentId={post.id} />}
+</ArticleLayout>
 
 <style>
-  /* 三层结构：微调色页底 → 文章「纸」（全站最重的玩具盒卡片）→ 内容。
-     列表页小卡片点进来展开成一张大卡片，语言同源；行长同时收到约 48 字 */
-  :global(body) { background: var(--a-page); }
-  article {
-    max-width: 57rem; margin: 0 auto;
-    background: var(--a-bg);
-    border: 3px solid var(--a-ink); border-radius: 1.4rem;
-    box-shadow: 0 6px 0 var(--a-ink);
-    padding: clamp(1.4rem, 4vw, 2.4rem) clamp(1.1rem, 4.5vw, 2.75rem) clamp(1.8rem, 5vw, 3rem);
-    transition: background-color .35s cubic-bezier(.41,.1,.13,1),
-                border-color .35s cubic-bezier(.41,.1,.13,1),
-                box-shadow .35s cubic-bezier(.41,.1,.13,1);
-  }
-  .back-row { margin: .8rem 0 1.3rem; }
-  .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
-  .back:hover { color: var(--a-secondary); }
   .post-head { margin: 0 0 1.5rem; padding-bottom: 1.1rem; border-bottom: 2px dashed var(--a-line); }
   h1 { margin: 0 0 .45em; font-size: clamp(1.55rem, 3.4vw, 2.25rem); line-height: 1.3; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 0; }
@@ -92,16 +64,4 @@ const readMinutes = readingMinutes(post.body ?? '');
     background: var(--a-chip); color: var(--a-chip-ink);
     border-radius: 999px; padding: .16em .7em;
   }
-  /* TOC 不占列——宽屏悬浮在纸右侧的页底空白区（见 TocNav），中窄屏折叠在正文顶部 */
-  .body-grid { display: grid; gap: 1.2rem; align-items: start; }
-  .foot-back { max-width: 57rem; margin: 1.6rem auto 3rem; }
-  .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
-  .foot-back a:hover { color: var(--a-secondary); }
 </style>
-
-<script>
-  // 悬浮目录栏放不下时（<1440px）默认收起（服务端渲染为展开态，宽屏保持常开）。
-  // range 语法与 CSS 的 (min-width: 1440px) 严格互补——max-width:1439px 会在
-  // 缩放产生的 1439~1440 小数视口宽处留缝。同组断点数字见 TocNav / SeriesNav
-  if (matchMedia('(width < 1440px)').matches) document.querySelector('.toc')?.removeAttribute('open');
-</script>

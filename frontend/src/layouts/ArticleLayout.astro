@@ -1,0 +1,64 @@
+---
+// 文章纸阅读骨架：博客详情与 Guide 镜像详情共用。
+// 三层结构：微调色页底 → 文章「纸」（全站最重的玩具盒卡片）→ 内容。
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import SiteNav from '../components/SiteNav.astro';
+import TocNav from '../components/TocNav.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;   // 仅 Guide 镜像页传；博客页永不传
+  backHref: string;
+  backLabel: string;
+  headings: MarkdownHeading[];
+}
+const { title, description, canonical, backHref, backLabel, headings } = Astro.props;
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+---
+
+<BaseLayout title={title} description={description} canonical={canonical}>
+  <div class="page">
+    <SiteNav />
+    <p class="back-row"><a class="back" href={backHref}>← {backLabel}</a></p>
+    <article>
+      <slot name="head" />
+      <div class="body-grid">
+        {toc.length > 0 && <TocNav headings={toc} />}
+        <div class="prose"><slot /></div>
+      </div>
+      <slot name="foot" />
+    </article>
+    <p class="foot-back"><a href={backHref}>← {backLabel}</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) { background: var(--a-page); }
+  article {
+    max-width: 57rem; margin: 0 auto;
+    background: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: 1.4rem;
+    box-shadow: 0 6px 0 var(--a-ink);
+    padding: clamp(1.4rem, 4vw, 2.4rem) clamp(1.1rem, 4.5vw, 2.75rem) clamp(1.8rem, 5vw, 3rem);
+    transition: background-color .35s cubic-bezier(.41,.1,.13,1),
+                border-color .35s cubic-bezier(.41,.1,.13,1),
+                box-shadow .35s cubic-bezier(.41,.1,.13,1);
+  }
+  .back-row { margin: .8rem 0 1.3rem; }
+  .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
+  .back:hover { color: var(--a-secondary); }
+  /* TOC 不占列——宽屏悬浮在纸右侧的页底空白区（见 TocNav），中窄屏折叠在正文顶部 */
+  .body-grid { display: grid; gap: 1.2rem; align-items: start; }
+  .foot-back { max-width: 57rem; margin: 1.6rem auto 3rem; }
+  .foot-back a { font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
+  .foot-back a:hover { color: var(--a-secondary); }
+</style>
+
+<script>
+  // 悬浮目录栏放不下时（<1440px）默认收起（服务端渲染为展开态，宽屏保持常开）。
+  // range 语法与 CSS 的 (min-width: 1440px) 严格互补——max-width:1439px 会在
+  // 缩放产生的 1439~1440 小数视口宽处留缝。同组断点数字见 TocNav / SeriesNav
+  if (matchMedia('(width < 1440px)').matches) document.querySelector('.toc')?.removeAttribute('open');
+</script>
