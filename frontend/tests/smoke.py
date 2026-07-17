@@ -373,7 +373,7 @@ try:
             if len(gfiles) > 1:  # 单篇工具（如试点期 codex）首篇即末篇，本就无「下一篇」，非缺陷
                 assert pg.locator('.pager a').count() >= 1, '首篇应至少有「下一篇」'
         # canonical 硬边界：博客与主页永不带 canonical（小从明确要求，防误伤自有内容）
-        for path in ('', 'blog/', 'blog/mysql-interview-notes/'):
+        for path in ('', 'blog/', 'blog/mysql-interview-notes/', 'blog/claude-code/', 'blog/codex/'):
             pg.goto(URL + path)
             n = pg.locator('head link[rel="canonical"]').count()
             assert n == 0, f'/{path} 不应有 canonical，实际 {n} 个'
