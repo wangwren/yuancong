@@ -3,7 +3,7 @@
 线上回归：TARGET_URL=https://yuancong.ai/ python3 tests/smoke.py（不起本地服务）
 """
 from playwright.sync_api import sync_playwright
-import socket, subprocess, time, os, re, urllib.parse, calendar
+import socket, subprocess, time, os, re, json, urllib.parse, calendar
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
@@ -383,8 +383,15 @@ try:
             assert 'stormzhang' in pg.locator('.post-head .src').inner_text(), '镜像声明行应存在'
             if len(gfiles) > 1:  # 单篇工具（如试点期 codex）首篇即末篇，本就无「下一篇」，非缺陷
                 assert pg.locator('.pager a').count() >= 1, '首篇应至少有「下一篇」'
-            assert pg.locator('.series li').count() == len(gfiles), '系列卡应列全同工具篇目'
-            assert pg.locator('.series [aria-current="page"]').count() == 1, '系列卡应高亮当前篇'
+            # 系列导航按章分组（官方站同构，数据 chapters.json）：只展开当前篇所在章
+            chmeta = json.load(open(os.path.join(GUIDE, 'chapters.json'), encoding='utf-8'))[tool]
+            slugs_here = {f[:-3] for f in gfiles}
+            n_chap = sum(1 for c in chmeta if slugs_here & set(c['slugs']))
+            assert pg.locator('.series details.chap').count() == n_chap, f'章节组应 {n_chap} 个'
+            assert pg.locator('.series li').count() == len(gfiles), '章节导航应列全同工具篇目'
+            assert pg.locator('.series details[open]').count() == 1, '默认应只展开当前篇所在章'
+            assert pg.locator('.series details[open] [aria-current="page"]').count() == 1, \
+                '当前篇应高亮且在展开章内'
         # canonical 硬边界：博客与主页永不带 canonical（小从明确要求，防误伤自有内容）
         for path in ('', 'blog/', 'blog/mysql-interview-notes/', 'blog/claude-code/', 'blog/codex/'):
             pg.goto(URL + path)

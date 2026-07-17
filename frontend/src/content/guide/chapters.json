@@ -1,0 +1,168 @@
+{
+  "claude-code": [
+    {
+      "title": "一 · 基础入门",
+      "slugs": [
+        "01-what-is-claude-code",
+        "02-install",
+        "03-how-it-works",
+        "04-api-config",
+        "05-third-party-models"
+      ]
+    },
+    {
+      "title": "二 · 上手与项目",
+      "slugs": [
+        "06-coding-plan",
+        "07-first-run",
+        "08-vscode",
+        "09-jetbrains",
+        "10-desktop",
+        "11-web-and-cloud",
+        "12-project-init",
+        "13-project-structure"
+      ]
+    },
+    {
+      "title": "三 · 核心交互与操作",
+      "slugs": [
+        "14-interface-and-shortcuts",
+        "15-prompting",
+        "16-common-workflows",
+        "17-images-multimodal",
+        "18-claude-md-guide",
+        "19-context-management",
+        "20-permissions",
+        "21-security"
+      ]
+    },
+    {
+      "title": "四 · 高级功能扩展",
+      "slugs": [
+        "22-mcp",
+        "23-subagents",
+        "24-plugins",
+        "25-memory",
+        "26-agent-skills",
+        "27-skills-in-practice",
+        "28-skill-creator",
+        "29-agent-teams",
+        "30-choosing-features"
+      ]
+    },
+    {
+      "title": "五 · 系统配置与优化",
+      "slugs": [
+        "31-settings-json",
+        "32-output-styles",
+        "33-hooks",
+        "34-cli-reference",
+        "35-modes-and-control",
+        "36-slash-commands",
+        "37-checkpoints"
+      ]
+    },
+    {
+      "title": "六 · 高级参考与实战",
+      "slugs": [
+        "38-plugins-reference",
+        "39-getting-started-practice",
+        "40-chrome",
+        "41-parallel-tasks",
+        "42-env-vars",
+        "43-git-workflow",
+        "44-github-actions",
+        "45-agent-sdk",
+        "46-dev-config",
+        "47-voice",
+        "48-capstone-project"
+      ]
+    },
+    {
+      "title": "七 · 收尾与查阅",
+      "slugs": [
+        "49-best-practices",
+        "50-anti-patterns",
+        "51-troubleshooting",
+        "52-glossary",
+        "53-remotion-video"
+      ]
+    }
+  ],
+  "codex": [
+    {
+      "title": "一 · 基础入门",
+      "slugs": [
+        "01-what-is-codex",
+        "02-core-concepts",
+        "03-install",
+        "04-pricing",
+        "05-third-party-models"
+      ]
+    },
+    {
+      "title": "二 · 各入口怎么上手",
+      "slugs": [
+        "06-first-task",
+        "07-desktop-app",
+        "08-cli",
+        "09-ide",
+        "10-cloud",
+        "11-agents-md"
+      ]
+    },
+    {
+      "title": "三 · 核心交互与操作",
+      "slugs": [
+        "12-slash-commands",
+        "13-prompting",
+        "14-workflows",
+        "15-permissions",
+        "16-security",
+        "17-computer-use"
+      ]
+    },
+    {
+      "title": "四 · 高级功能扩展",
+      "slugs": [
+        "18-config",
+        "19-memory",
+        "20-mcp",
+        "21-subagents",
+        "22-skills",
+        "23-plugins",
+        "24-hooks"
+      ]
+    },
+    {
+      "title": "五 · 工程化与自动化",
+      "slugs": [
+        "25-worktrees",
+        "26-git-github",
+        "27-automation",
+        "28-noninteractive",
+        "29-integrations"
+      ]
+    },
+    {
+      "title": "六 · 实战与进阶",
+      "slugs": [
+        "30-models",
+        "31-speed",
+        "32-migrate-from-claude-code",
+        "33-windows",
+        "34-capstone"
+      ]
+    },
+    {
+      "title": "七 · 收尾与查阅",
+      "slugs": [
+        "35-cheatsheet",
+        "36-best-practices",
+        "37-faq",
+        "38-glossary",
+        "39-enterprise"
+      ]
+    }
+  ]
+}

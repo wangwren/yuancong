@@ -1,0 +1,78 @@
+---
+// Guide「本系列」章节导航：按官方阅读站同构的章节分组（chapters.json 随同步产物走），
+// 当前篇所在章默认展开、其余收起（同 TOC 的 details 折叠语言）。
+// 卡片壳与定位同博客 SeriesNav：宽屏 ≥1440px 悬浮纸左缘外与右侧 TOC 镜像，窄屏纸内文末。
+import type { CollectionEntry } from 'astro:content';
+import chaptersData from '../content/guide/chapters.json';
+
+interface Props {
+  name: string;                       // 工具显示名（Claude Code / Codex）
+  tool: string;                       // 工具 key = content/guide 子目录名
+  posts: CollectionEntry<'guide'>[];  // 同工具全部篇目（编号升序）
+  currentId: string;
+}
+const { name, tool, posts, currentId } = Astro.props;
+
+type Chapter = { title: string; slugs: string[] };
+const toolChapters = (chaptersData as Record<string, Chapter[]>)[tool];
+if (!toolChapters) throw new Error(`chapters.json 缺少工具「${tool}」的章节映射，请重跑同步脚本`);
+
+const bySlug = new Map(posts.map((p) => [p.id.split('/')[1], p]));
+// 章内只列已同步的篇目，空章不渲染（试点期允许不齐）
+const chapters = toolChapters
+  .map((c) => ({ title: c.title, items: c.slugs.filter((s) => bySlug.has(s)).map((s) => bySlug.get(s)!) }))
+  .filter((c) => c.items.length > 0);
+// 产物与映射对不上说明 content/guide 被手改过——构建期就地报错，别带病上线
+const mappedSlugs = new Set(toolChapters.flatMap((c) => c.slugs));
+const orphan = posts.filter((p) => !mappedSlugs.has(p.id.split('/')[1]));
+if (orphan.length > 0) {
+  throw new Error(`篇目不在章节映射中（content/guide 勿手改，请重跑同步脚本）：${orphan.map((p) => p.id).join(', ')}`);
+}
+---
+
+<nav class="series" aria-label={`系列：${name}`}>
+  <p class="s-head">本系列 · {name}</p>
+  {chapters.map((c) => (
+    <details class="chap" open={c.items.some((p) => p.id === currentId) || undefined}>
+      <summary>{c.title}</summary>
+      <ul>
+        {c.items.map((p) => (
+          <li>
+            {p.id === currentId
+              ? <span aria-current="page">{p.data.title}</span>
+              : <a href={`/blog/${p.id}/`}>{p.data.title}</a>}
+          </li>
+        ))}
+      </ul>
+    </details>
+  ))}
+</nav>
+
+<style>
+  .series {
+    margin-top: 2.6rem; padding: .9rem 1.2rem;
+    border: 2px solid var(--a-line); border-radius: .9rem;
+    font-size: .88rem;
+  }
+  .s-head { margin: 0 0 .5rem; font-weight: 700; }
+  .chap { margin: .15rem 0; }
+  summary { cursor: pointer; font-weight: 700; color: var(--a-muted); padding: .2em 0; }
+  summary:hover { color: var(--a-primary); }
+  .chap[open] > summary { color: var(--a-ink); }
+  ul { list-style: none; margin: .2em 0 .55em; padding-left: 1.05em; }
+  li { margin: .35em 0; line-height: 1.45; }
+  a { color: var(--a-muted); text-decoration: none; }
+  a:hover { color: var(--a-primary); }
+  span[aria-current] { font-weight: 700; }
+  /* 宽屏：悬浮到纸左缘外的页底空白区，位置与右侧 TOC 镜像 */
+  @media (min-width: 1440px) {
+    .series {
+      position: fixed; top: 9.5rem;
+      right: calc(50% + 29.5rem); width: 14.5rem;
+      max-height: calc(100vh - 11.5rem); overflow-y: auto;
+      margin-top: 0; padding: .9rem 1.1rem; font-size: .84rem;
+      background: var(--a-bg);
+      border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
+    }
+  }
+</style>
