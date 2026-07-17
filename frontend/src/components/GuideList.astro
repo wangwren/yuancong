@@ -6,6 +6,7 @@ import SeriesBar from './SeriesBar.astro';
 import { readingMinutes } from '../lib/reading-time';
 import { chapterGroups } from '../lib/guide';
 import type { GuideToolKey } from '../lib/guide';
+import '../styles/fold.css';
 // 最近同步日期由同步脚本写入（构建期读入，Vite 静态解析 JSON import，
 // 比 readFileSync(new URL(…, import.meta.url)) 更可靠：后者在打包后的
 // chunk 里已不再位于 src/ 同目录，运行时会 ENOENT）
@@ -29,7 +30,7 @@ const chapters = chapterGroups(tool, posts);
   </aside>
   <div class="rows">
     {chapters.map((c) => (
-      <details class="chap-group">
+      <details class="chap-group fold">
         <summary class="chap-head">{c.title}</summary>
         {c.items.map((p) => (
           <a class="row" href={`/blog/${p.id}/`}>
@@ -59,16 +60,8 @@ const chapters = chapterGroups(tool, posts);
   .rows { max-width: 47rem; padding-bottom: 3rem; }
   /* 章节小节头：正文 h2 同款左侧圆角竖条语言（标题系统定稿），details 折叠、默认全收起
      （同官方站侧栏交互，一屏看全七章）；原生 marker 隐掉，右侧自绘旋转箭头 */
-  .chap-group { margin-top: .9rem; interpolate-size: allow-keywords; }
-  /* 开合高度过渡：原生 ::details-content 方案零 JS，不支持的浏览器退化为直接开合 */
-  .chap-group::details-content {
-    block-size: 0; overflow-y: clip;
-    transition: block-size .28s cubic-bezier(.41,.1,.13,1),
-                content-visibility .28s allow-discrete;
-  }
-  .chap-group[open]::details-content { block-size: auto; }
+  .chap-group { margin-top: .9rem; }  /* 开合动画见 styles/fold.css（与详情侧栏共享） */
   @media (prefers-reduced-motion: reduce) {
-    .chap-group::details-content { transition: none; }
     .chap-head::after { transition: none; }
   }
   .chap-head {

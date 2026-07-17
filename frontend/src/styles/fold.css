@@ -1,0 +1,13 @@
+/* details 折叠开合的高度过渡（挂 .fold 类启用）：原生 interpolate-size +
+   ::details-content 方案零 JS，不支持的浏览器退化为直接开合。
+   Guide 列表章节组与详情侧栏章节共用——改这里同时生效两处 */
+.fold { interpolate-size: allow-keywords; }
+.fold::details-content {
+  block-size: 0; overflow-y: clip;
+  transition: block-size .28s cubic-bezier(.41,.1,.13,1),
+              content-visibility .28s allow-discrete;
+}
+.fold[open]::details-content { block-size: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .fold::details-content { transition: none; }
+}

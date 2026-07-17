@@ -1,0 +1,23 @@
+/* 文章纸侧卡（「本系列」导航）：博客 SeriesNav 与 Guide GuideSeriesNav 共用的
+   卡片壳、链接样式与宽屏浮动几何——改这里同时生效两处，防两份拷贝漂移 */
+.series {
+  margin-top: 2.6rem; padding: .9rem 1.2rem;
+  border: 2px solid var(--a-line); border-radius: .9rem;
+  font-size: .88rem;
+}
+.series .s-head { margin: 0 0 .5rem; font-weight: 700; }
+.series li { margin: .35em 0; line-height: 1.45; }
+.series a { color: var(--a-muted); text-decoration: none; }
+.series a:hover { color: var(--a-primary); }
+.series span[aria-current] { font-weight: 700; }
+/* 宽屏：悬浮到纸左缘外的页底空白区，位置与右侧 TOC 镜像 */
+@media (min-width: 1440px) {
+  .series {
+    position: fixed; top: 9.5rem;
+    right: calc(50% + 29.5rem); width: 14.5rem;
+    max-height: calc(100vh - 11.5rem); overflow-y: auto;
+    margin-top: 0; padding: .9rem 1.1rem; font-size: .84rem;
+    background: var(--a-bg);
+    border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
+  }
+}
