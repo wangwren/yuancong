@@ -40,7 +40,17 @@ const chapters = chapterGroups(tool, posts);
     font-size: .88rem;
   }
   .s-head { margin: 0 0 .5rem; font-weight: 700; }
-  .chap { margin: .15rem 0; }
+  .chap { margin: .15rem 0; interpolate-size: allow-keywords; }
+  /* 开合高度过渡（同列表页章节组）：原生 ::details-content 方案零 JS，不支持则直接开合 */
+  .chap::details-content {
+    block-size: 0; overflow-y: clip;
+    transition: block-size .28s cubic-bezier(.41,.1,.13,1),
+                content-visibility .28s allow-discrete;
+  }
+  .chap[open]::details-content { block-size: auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .chap::details-content { transition: none; }
+  }
   summary { cursor: pointer; font-weight: 700; color: var(--a-muted); padding: .2em 0; }
   summary:hover { color: var(--a-primary); }
   .chap[open] > summary { color: var(--a-ink); }
