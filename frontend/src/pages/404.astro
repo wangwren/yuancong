@@ -1,14 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SkyBand from '../components/SkyBand.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 ---
 
 <BaseLayout title="404 — yuancong.ai" description="这一页不存在。">
+  <SkyBand height="15rem" />
   <div class="page">
     <div class="wrap">
       <p class="code">404</p>
       <p class="msg">这一页不存在。可能是链接打错了，也可能是它还没被写出来。</p>
       <a class="home" href="/">回主页 →</a>
     </div>
+    <SiteFooter />
   </div>
 </BaseLayout>
 

@@ -248,6 +248,8 @@ try:
         pg404 = browser.new_page()
         pg404.goto(URL + 'no-such-page/')
         assert '这一页不存在' in pg404.content(), '404 页未生效'
+        assert pg404.locator('.skyband').count() == 1, '404 页应有天空带'
+        assert pg404.locator('footer .mini').count() == 1, '404 页应有页脚'
         pg404.close()
 
         # --- 打字机 + 撒花 ---
