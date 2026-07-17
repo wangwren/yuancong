@@ -368,7 +368,10 @@ try:
             assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == label
             assert pg.locator('.rows .row').count() == len(gfiles), f'{label} 应 {len(gfiles)} 篇'
             n_chap_l = guide_chapter_count(tool)
-            assert pg.locator('.rows .chap-head').count() == n_chap_l, f'列表页章节头应 {n_chap_l} 个'
+            assert pg.locator('.rows details.chap-group').count() == n_chap_l, f'列表页章节组应 {n_chap_l} 个'
+            assert pg.locator('.rows details.chap-group[open]').count() == 0, '列表章节应默认全收起'
+            pg.locator('.rows .chap-head').first.click()  # 展开第一章，再验行序与可点入
+            assert pg.locator('.rows details.chap-group[open]').count() == 1, '点击章节头应展开'
             first_t = pg.locator('.rows .row .t').first.inner_text()
             assert first_t.startswith(gfiles[0][:2]), f'应按编号正序，首行 {first_t}'
             notice = pg.locator('.notice').inner_text()

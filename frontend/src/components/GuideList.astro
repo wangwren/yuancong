@@ -29,8 +29,8 @@ const chapters = chapterGroups(tool, posts);
   </aside>
   <div class="rows">
     {chapters.map((c) => (
-      <section class="chap-group">
-        <h2 class="chap-head">{c.title}</h2>
+      <details class="chap-group">
+        <summary class="chap-head">{c.title}</summary>
         {c.items.map((p) => (
           <a class="row" href={`/blog/${p.id}/`}>
             <span class="t">{p.data.title}</span>
@@ -38,7 +38,7 @@ const chapters = chapterGroups(tool, posts);
             <span class="meta"><span class="stat">{readingMinutes(p.body ?? '')} min read</span></span>
           </a>
         ))}
-      </section>
+      </details>
     ))}
   </div>
 </div>
@@ -57,15 +57,27 @@ const chapters = chapterGroups(tool, posts);
   .notice a:hover { color: var(--a-secondary); }
   /* 行式列表同博客列表语言：47rem、虚线分隔、hover 只变主色 */
   .rows { max-width: 47rem; padding-bottom: 3rem; }
-  /* 章节小节头：正文 h2 同款左侧圆角竖条语言（标题系统定稿），不折叠——列表是扫读索引 */
-  .chap-group { margin-top: 1.9rem; }
-  .chap-group:first-child { margin-top: .9rem; }
-  .chap-head { margin: 0; font-size: 1.02rem; line-height: 1.4; }
+  /* 章节小节头：正文 h2 同款左侧圆角竖条语言（标题系统定稿），details 折叠、默认全收起
+     （同官方站侧栏交互，一屏看全七章）；原生 marker 隐掉，右侧自绘旋转箭头 */
+  .chap-group { margin-top: .9rem; }
+  .chap-head {
+    display: flex; align-items: center;
+    margin: 0; padding: .45em .2rem;
+    font-size: 1.02rem; font-weight: 700; line-height: 1.4;
+    list-style: none; cursor: pointer;
+  }
+  .chap-head::-webkit-details-marker { display: none; }
+  .chap-head:hover { color: var(--a-primary); }
   .chap-head::before {
-    content: ''; display: inline-block; vertical-align: -.12em;
+    content: ''; display: inline-block; flex: none;
     width: .3em; height: 1.05em; border-radius: 99px;
     background: var(--a-primary); margin-right: .45em;
   }
+  .chap-head::after {
+    content: '▸'; margin-left: auto; color: var(--a-muted);
+    transition: transform .2s;
+  }
+  .chap-group[open] > .chap-head::after { transform: rotate(90deg); }
   .row {
     display: flex; flex-direction: column; gap: .4rem;
     padding: 1.1rem .2rem 1.15rem;
