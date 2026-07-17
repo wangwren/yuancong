@@ -3,7 +3,7 @@ title: "08 · VS Code 集成"
 description: "刚转去用 VS Code 扩展那阵子，很容易干一件挺蠢的事。"
 ---
 
-> 📚 **系列导航**：上一篇 [07 第一次使用](./07-first-run.md) 带你在终端跑通了第一个例子。这一篇把 Claude Code 搬进 VS Code——同样的能力，换成有图形界面的玩法。
+> 📚 **系列导航**：上一篇 [07 第一次使用](/blog/claude-code/07-first-run/) 带你在终端跑通了第一个例子。这一篇把 Claude Code 搬进 VS Code——同样的能力，换成有图形界面的玩法。
 
 刚转去用 VS Code 扩展那阵子，很容易干一件挺蠢的事。
 

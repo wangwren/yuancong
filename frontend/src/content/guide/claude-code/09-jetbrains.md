@@ -3,7 +3,7 @@ title: "09 · JetBrains 集成"
 description: "A：「我天天泡在 PyCharm 里，VS Code 那套扩展跟我没关系吧？」"
 ---
 
-> 📚 **系列导航**：上一篇 [08 VS Code 集成](./08-vscode.md) 把 Claude Code 搬进了 VS Code。这一篇换个阵营——如果你的主力是 IntelliJ IDEA、PyCharm、WebStorm 这类 JetBrains 全家桶，同样有原生插件，玩法既像又不像。下一篇 [10 桌面 app](./10-desktop.md)。
+> 📚 **系列导航**：上一篇 [08 VS Code 集成](/blog/claude-code/08-vscode/) 把 Claude Code 搬进了 VS Code。这一篇换个阵营——如果你的主力是 IntelliJ IDEA、PyCharm、WebStorm 这类 JetBrains 全家桶，同样有原生插件，玩法既像又不像。下一篇 [10 桌面 app](/blog/claude-code/10-desktop/)。
 
 A：「我天天泡在 PyCharm 里，VS Code 那套扩展跟我没关系吧？」
 
@@ -89,7 +89,7 @@ claude --version
 
 **预期输出**：打印出一串版本号，类似 `2.x.x (Claude Code)`。
 
-如果提示 `command not found`，说明 CLI 还没装。回到 [02 安装](./02-install.md) 那篇装一下，或者用官方安装命令（分平台）：
+如果提示 `command not found`，说明 CLI 还没装。回到 [02 安装](/blog/claude-code/02-install/) 那篇装一下，或者用官方安装命令（分平台）：
 
 ```bash
 # macOS / Linux / WSL
@@ -202,7 +202,7 @@ claude
 
 两个安全 / 易错点单独拎出来：
 
-> ⚠️ **安全**（和 VS Code 一致）：如果文件命中你设的 [`Read` 拒绝规则](./20-permissions.md)，它的选区共享会被拦住、不发给 Claude（以官方文档为准）。`.env` 这类敏感文件建议加上。
+> ⚠️ **安全**（和 VS Code 一致）：如果文件命中你设的 [`Read` 拒绝规则](/blog/claude-code/20-permissions/)，它的选区共享会被拦住、不发给 Claude（以官方文档为准）。`.env` 这类敏感文件建议加上。
 >
 > ⚠️ **易错**：文件引用快捷键和 VS Code 不一样——VS Code 是 `Option+K` / `Alt+K`，JetBrains 多一个键，是 `Cmd+Option+K` / `Alt+Ctrl+K`，从 VS Code 切过来最容易按错。
 
@@ -314,7 +314,7 @@ New-NetFirewallRule -DisplayName "Allow WSL2 Internal Traffic" -Direction Inboun
 
 下面这套从零走一遍，每步都给了「你该看到什么」，照着做就能自验。**用 PyCharm 演示，其他 JetBrains IDE 步骤完全一样。**
 
-**第 0 步：确认 CLI 在** —— 跑 `claude --version`，**预期**打印版本号（如 `2.x.x (Claude Code)`）；报 `command not found` 就先回 [02 安装](./02-install.md)。
+**第 0 步：确认 CLI 在** —— 跑 `claude --version`，**预期**打印版本号（如 `2.x.x (Claude Code)`）；报 `command not found` 就先回 [02 安装](/blog/claude-code/02-install/)。
 
 **第 1 步：装插件并重启** —— PyCharm → Settings → Plugins → Marketplace，搜 `Claude Code` → Install，**完全退出 PyCharm 再重开**。**预期**重启后 Settings → Tools 下能看到 **Claude Code \[Beta]**。
 

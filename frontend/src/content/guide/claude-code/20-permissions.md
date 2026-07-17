@@ -1,9 +1,9 @@
 ---
 title: "20 · 权限配置：放多松、收多紧，你说了算"
-description: "📚 系列导航：上一篇 19 上下文管理(./19-context-management.md) 教你怎么管好 Claude 的「工作台」、别让它把记忆塞爆。"
+description: "「你怎么敢开 --dangerously-skip-permissions？这玩意儿名字里都写着 dangerous 了。」"
 ---
 
-📚 **系列导航**：上一篇 [19 上下文管理](./19-context-management.md) 教你怎么管好 Claude 的「工作台」、别让它把记忆塞爆。这一篇换个维度——管的不是「它记得多少」，而是「它敢动多少」：从一行命令都要问你，到全自动放飞，权限这根缰绳到底攥多紧，你说了算。
+📚 **系列导航**：上一篇 [19 上下文管理](/blog/claude-code/19-context-management/) 教你怎么管好 Claude 的「工作台」、别让它把记忆塞爆。这一篇换个维度——管的不是「它记得多少」，而是「它敢动多少」：从一行命令都要问你，到全自动放飞，权限这根缰绳到底攥多紧，你说了算。
 
 「你怎么敢开 `--dangerously-skip-permissions`？这玩意儿名字里都写着 dangerous 了。」
 

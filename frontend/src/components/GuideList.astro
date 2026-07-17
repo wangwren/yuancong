@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 import SiteNav from './SiteNav.astro';
 import SeriesBar from './SeriesBar.astro';
 import { readingMinutes } from '../lib/reading-time';
-import { chapterGroups, officialUrl } from '../lib/guide';
+import { chapterGroups } from '../lib/guide';
 import type { GuideToolKey } from '../lib/guide';
 // 最近同步日期由同步脚本写入（构建期读入，Vite 静态解析 JSON import，
 // 比 readFileSync(new URL(…, import.meta.url)) 更可靠：后者在打包后的
@@ -25,7 +25,7 @@ const chapters = chapterGroups(tool, posts);
   <header class="blog-head"><h1>Blog</h1></header>
   <SeriesBar active={tool} />
   <aside class="notice">
-    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href={officialUrl(tool)}>官方站</a>。最近同步：{syncMeta.syncedAt}
+    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。此处为存档镜像，在线阅读推荐<a href="https://coding.stormzhang.ai">官方站</a>。最近同步：{syncMeta.syncedAt}
   </aside>
   <div class="rows">
     {chapters.map((c) => (

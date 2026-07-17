@@ -3,7 +3,7 @@ title: "12 · 项目初始化：用 /init 一键生成 CLAUDE.md"
 description: "兄弟们，先讲个常见的蠢操作。"
 ---
 
-> 📚 **系列导航**：上一篇 [11 网页版与云端](./11-web-and-cloud.md) 带你跳出终端，在浏览器和云端环境里用上了 Claude Code。这一篇回到本地、回到一个最该养成的习惯——进新项目第一件事，敲 `/init`，让 Claude 自己扫一遍代码库、把项目说明书写出来。下一篇：[13 项目结构](./13-project-structure.md) 。
+> 📚 **系列导航**：上一篇 [11 网页版与云端](/blog/claude-code/11-web-and-cloud/) 带你跳出终端，在浏览器和云端环境里用上了 Claude Code。这一篇回到本地、回到一个最该养成的习惯——进新项目第一件事，敲 `/init`，让 Claude 自己扫一遍代码库、把项目说明书写出来。下一篇：[13 项目结构](/blog/claude-code/13-project-structure/) 。
 
 兄弟们，先讲个常见的蠢操作。
 

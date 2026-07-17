@@ -3,7 +3,7 @@ title: "10 · 桌面 app（Desktop）"
 description: "都说命令行才是 Claude Code 的「正统玩法」，桌面 app 顶多是给小白的简化版——说句实话，这个判断现在已经过时了。"
 ---
 
-> 📚 **系列导航**：上一篇 [09 JetBrains 集成](./09-jetbrains.md) 把 Claude Code 装进了 IntelliJ 全家桶。这一篇聊一个很多人忽略的入口——**官方桌面 app**，一个没有终端、没有 IDE，也能跑 Claude Code 的独立窗口。
+> 📚 **系列导航**：上一篇 [09 JetBrains 集成](/blog/claude-code/09-jetbrains/) 把 Claude Code 装进了 IntelliJ 全家桶。这一篇聊一个很多人忽略的入口——**官方桌面 app**，一个没有终端、没有 IDE，也能跑 Claude Code 的独立窗口。
 
 都说命令行才是 Claude Code 的「正统玩法」，桌面 app 顶多是给小白的简化版——**说句实话，这个判断现在已经过时了**。
 
