@@ -1,0 +1,40 @@
+---
+// 系列导航条：blog 集合系列（目录即系列）+ Guide 镜像两个固定 tab。
+// blog 列表页与 guide 列表页共用；active = 当前系列/工具 key，null 表示「全部文章」。
+import { getCollection } from 'astro:content';
+import { seriesOf } from '../lib/series';
+import { GUIDE_TOOLS } from '../lib/guide';
+
+interface Props { active: string | null }
+const { active } = Astro.props;
+
+const all = await getCollection('blog');
+// 目录名即系列名，中英混排按中文习惯排序（英文字母在前、中文按拼音）
+const navSeries = [...new Set(all.map(seriesOf).filter((s): s is string => s !== null))]
+  .sort((a, b) => a.localeCompare(b, 'zh-CN'));
+---
+
+<nav class="series-bar" aria-label="按系列浏览">
+  <a href="/blog/" aria-current={active === null ? 'page' : undefined}>全部文章</a>
+  {navSeries.map((s) => (
+    <a href={`/blog/${encodeURIComponent(s)}/`} aria-current={active === s ? 'page' : undefined}>{s}</a>
+  ))}
+  {GUIDE_TOOLS.map((t) => (
+    <a href={`/blog/${t.key}/`} aria-current={active === t.key ? 'page' : undefined}>{t.label}</a>
+  ))}
+</nav>
+
+<style>
+  /* 系列是一级导航（tab 式下划线，同 h2 色条语言），标签是二级筛选（胶囊） */
+  .series-bar {
+    display: flex; flex-wrap: wrap; gap: 1.6rem;
+    margin-bottom: 1.3rem; font-size: .98rem; font-weight: 700;
+  }
+  .series-bar a {
+    color: var(--a-muted); text-decoration: none;
+    padding-bottom: .18em; border-bottom: 3px solid transparent;
+    transition: color .2s;
+  }
+  .series-bar a:hover { color: var(--a-primary); }
+  .series-bar a[aria-current="page"] { color: var(--a-ink); border-bottom-color: var(--a-primary); }
+</style>

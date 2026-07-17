@@ -1,0 +1,66 @@
+---
+// Guide 镜像列表页主体：来源声明 + 按编号正序的文章行（两工具 tab 共用）。
+import { getCollection } from 'astro:content';
+import SiteNav from './SiteNav.astro';
+import SeriesBar from './SeriesBar.astro';
+import { readingMinutes } from '../lib/reading-time';
+import { officialUrl } from '../lib/guide';
+import type { GuideToolKey } from '../lib/guide';
+// 最近同步日期由同步脚本写入（构建期读入，Vite 静态解析 JSON import，
+// 比 readFileSync(new URL(…, import.meta.url)) 更可靠：后者在打包后的
+// chunk 里已不再位于 src/ 同目录，运行时会 ENOENT）
+import syncMeta from '../content/guide/sync-meta.json';
+
+interface Props { tool: GuideToolKey }
+const { tool } = Astro.props;
+
+const posts = (await getCollection('guide'))
+  .filter((p) => p.id.startsWith(tool + '/'))
+  .sort((a, b) => a.id.localeCompare(b.id));  // 文件名编号即阅读顺序
+---
+
+<div class="page">
+  <SiteNav />
+  <header class="blog-head"><h1>Blog</h1></header>
+  <SeriesBar active={tool} />
+  <aside class="notice">
+    本系列镜像自 <a href="https://github.com/stormzhang/ai-coding-guide">stormzhang 的《AI 编程指南》</a>（© 2026 stormzhang · <a href="https://github.com/stormzhang/ai-coding-guide/blob/main/LICENSE">MIT 许可</a>）。我是该仓库贡献者之一，此处为存档镜像；在线阅读推荐<a href={officialUrl(tool)}>官方站</a>。最近同步：{syncMeta.syncedAt}
+  </aside>
+  <div class="rows">
+    {posts.map((p) => (
+      <a class="row" href={`/blog/${p.id}/`}>
+        <span class="t">{p.data.title}</span>
+        <p class="ex">{p.data.description}</p>
+        <span class="meta"><span class="stat">{readingMinutes(p.body ?? '')} min read</span></span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .blog-head { margin: 1.2rem 0 1.6rem; }
+  .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  /* 声明块用 prose 引用块同语言（wash 底 + 副色左线），信息级不抢戏 */
+  .notice {
+    max-width: 47rem; margin: 0 0 1.2rem; padding: .7em 1.1em;
+    font-size: .88rem; line-height: 1.7; color: var(--a-muted);
+    background: var(--a-hover-wash); border-left: 4px solid var(--a-secondary);
+    border-radius: 0 .8rem .8rem 0;
+  }
+  .notice a { color: var(--a-primary); font-weight: 700; text-decoration: none; transition: color .2s; }
+  .notice a:hover { color: var(--a-secondary); }
+  /* 行式列表同博客列表语言：47rem、虚线分隔、hover 只变主色 */
+  .rows { max-width: 47rem; padding-bottom: 3rem; }
+  .row {
+    display: flex; flex-direction: column; gap: .4rem;
+    padding: 1.1rem .2rem 1.15rem;
+    border-bottom: 2px dashed var(--a-line);
+    text-decoration: none;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .t { font-weight: 700; font-size: 1.14rem; line-height: 1.4; }
+  .row:hover .t { color: var(--a-primary); }
+  .row .ex { margin: 0; color: var(--a-muted); font-size: .9rem; }
+  .row .meta { display: flex; align-items: center; margin-top: .15rem; }
+  .row .stat { color: var(--a-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+</style>

@@ -340,6 +340,25 @@ try:
         pg.evaluate("window.scrollTo({top: 0, behavior: 'instant'})")
         pg.wait_for_function("!document.querySelector('.toc a.now')", timeout=3000)
 
+        # --- Guide 镜像：系列栏 tab 与列表页 ---
+        pg.goto(URL + 'blog/')
+        for tool, label in (('claude-code', 'Claude Code'), ('codex', 'Codex')):
+            assert pg.locator(f'.series-bar a[href="/blog/{tool}/"]').count() == 1, f'{label} tab 应在系列栏'
+        for tool, label in (('claude-code', 'Claude Code'), ('codex', 'Codex')):
+            gfiles = guide_files(tool)
+            if not gfiles:
+                continue
+            pg.goto(URL + f'blog/{tool}/')
+            assert pg.locator('.series-bar a[aria-current="page"]').inner_text() == label
+            assert pg.locator('.rows .row').count() == len(gfiles), f'{label} 应 {len(gfiles)} 篇'
+            first_t = pg.locator('.rows .row .t').first.inner_text()
+            assert first_t.startswith(gfiles[0][:2]), f'应按编号正序，首行 {first_t}'
+            notice = pg.locator('.notice').inner_text()
+            assert 'stormzhang' in notice and 'MIT' in notice, '来源声明块应含作者与协议'
+            pg.locator('.rows .row').first.click()
+            pg.wait_for_url(f'**/blog/{tool}/**')
+            assert pg.locator('.post-head .src').count() == 1, '行应能点进镜像详情'
+
         # --- Guide 镜像：详情页、canonical 双向硬边界 ---
         for tool in ('claude-code', 'codex'):
             gfiles = guide_files(tool)
