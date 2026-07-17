@@ -323,6 +323,23 @@ try:
         pg.goto(URL + 'blog/')
         assert pg.locator('.blog-head h1').inner_text().strip() == 'Blog', '页头应为 Blog'
         assert pg.locator('.blog-head p').count() == 0, '介绍句应已删除'
+        # 全站风格统一：灰蓝底 + 列表纸（与详情纸同规格）+ 矮天空 + 页脚 + Baloo 2 页头
+        got = pg.evaluate("() => { const d = document.createElement('div');"
+                          " d.style.background = 'var(--a-page)'; document.body.append(d);"
+                          " const r = [getComputedStyle(d).backgroundColor,"
+                          " getComputedStyle(document.body).backgroundColor];"
+                          " d.remove(); return r; }")
+        assert got[0] == got[1], f'列表页底色应为 --a-page，实际 {got}'
+        assert pg.locator('.list-paper').count() == 1, '列表主体应装进纸卡'
+        pw = pg.locator('.list-paper').evaluate('e => e.getBoundingClientRect().width')
+        assert pw == 912, f'列表纸应 57rem(912px)，实际 {pw}'
+        assert pg.locator('.list-paper a.post').count() == pg.locator('a.post').count(), \
+            '文章行应全在纸内'
+        ff = pg.locator('.blog-head h1').evaluate('e => getComputedStyle(e).fontFamily')
+        assert 'Baloo 2' in ff, f'Blog 页头应声明 Baloo 2，实际 {ff}'
+        sky_h = pg.locator('.skyband').evaluate('e => e.getBoundingClientRect().height')
+        assert sky_h == 240, f'列表页天空带应 15rem，实际 {sky_h}'
+        assert pg.locator('footer .mini').count() == 1, '列表页应有页脚'
         assert pg.locator('.posts .stat').count() == N_ALL, '每行应有阅读时长'
         t0 = pg.locator('.posts time').first.inner_text()
         assert re.fullmatch(r'\d{4}-\d{2}-\d{2}', t0), f'列表日期应精确到天，实际 {t0}'

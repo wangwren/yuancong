@@ -1,9 +1,14 @@
 ---
-// 博客列表主体：系列导航 + 标签筛选 + 卡片网格（/blog/ 与各系列页共用）。
+// 博客列表主体：系列导航 + 标签筛选 + 单列索引行（/blog/ 与各系列页共用）。
+// 2026-07-17 风格统一：灰蓝页底 + 主体装进 57rem 列表纸（与详情文章纸同规格），
+// 页顶矮天空带、页底全站页脚——全站「天空 → 内容纸」结构。
 import type { CollectionEntry } from 'astro:content';
+import SkyBand from './SkyBand.astro';
 import SiteNav from './SiteNav.astro';
+import SiteFooter from './SiteFooter.astro';
 import PostRow from './PostRow.astro';
 import SeriesBar from './SeriesBar.astro';
+import '../styles/paper.css';
 
 interface Props {
   posts: CollectionEntry<'blog'>[];  // 本页展示的文章（已排序）
@@ -17,23 +22,32 @@ for (const p of posts) for (const t of p.data.tags) freq.set(t, (freq.get(t) ?? 
 const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t)];
 ---
 
+<SkyBand height="15rem" />
 <div class="page">
   <SiteNav />
-  <header class="blog-head">
-    <h1>Blog</h1>
-  </header>
-  <SeriesBar active={active} />
-  <div class="tagbar" role="group" aria-label="按标签筛选">
-    {tags.map((t) => <button class="pill" data-tag={t}>{t}</button>)}
+  <div class="paper list-paper">
+    <header class="blog-head">
+      <h1>Blog</h1>
+    </header>
+    <SeriesBar active={active} />
+    <div class="tagbar" role="group" aria-label="按标签筛选">
+      {tags.map((t) => <button class="pill" data-tag={t}>{t}</button>)}
+    </div>
+    <div class="posts">
+      {posts.map((post) => <PostRow post={post} />)}
+    </div>
   </div>
-  <div class="posts">
-    {posts.map((post) => <PostRow post={post} />)}
-  </div>
+  <SiteFooter />
 </div>
 
 <style>
-  .blog-head { margin: 1.2rem 0 1.6rem; }
-  .blog-head h1 { margin: 0 0 .3em; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  :global(body) { background: var(--a-page); }
+  .list-paper { margin: .6rem auto 2.2rem; }
+  .blog-head { margin: 0 0 1.4rem; }
+  .blog-head h1 {
+    margin: 0; font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-family: "Baloo 2", "PingFang SC", sans-serif;  /* 与导航字标呼应，字体已加载零成本 */
+  }
   .tagbar { display: flex; flex-wrap: wrap; gap: .7rem; margin-bottom: 1.8rem; }
   .pill {
     font: inherit; font-size: .86rem; font-weight: 700;
@@ -45,7 +59,7 @@ const tags = ['全部', ...[...freq.entries()].sort((a, b) => b[1] - a[1]).map((
   }
   .pill:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--a-ink); }
   .pill.on { background: var(--a-primary); color: var(--a-bg); transform: translateY(1px); box-shadow: 0 2px 0 var(--a-ink); }
-  .posts { max-width: 47rem; padding-bottom: 3rem; }
+  .posts { max-width: 47rem; padding-bottom: .4rem; }  /* 纸自带底边距，原 3rem 留白转给纸外 */
   .posts :global(.post.hide) { display: none; }
 </style>
 
