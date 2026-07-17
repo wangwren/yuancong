@@ -5,6 +5,9 @@ import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import SiteNav from '../components/SiteNav.astro';
 import TocNav from '../components/TocNav.astro';
+import SkyBand from '../components/SkyBand.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import '../styles/paper.css';
 
 interface Props {
   title: string;
@@ -19,10 +22,11 @@ const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
 ---
 
 <BaseLayout title={title} description={description} canonical={canonical}>
+  <SkyBand height="15rem" />
   <div class="page">
     <SiteNav />
     <p class="back-row"><a class="back" href={backHref}>← {backLabel}</a></p>
-    <article>
+    <article class="paper">
       <slot name="head" />
       <div class="body-grid">
         {toc.length > 0 && <TocNav headings={toc} />}
@@ -31,21 +35,13 @@ const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
       <slot name="foot" />
     </article>
     <p class="foot-back"><a href={backHref}>← {backLabel}</a></p>
+    <SiteFooter />
   </div>
 </BaseLayout>
 
 <style>
   :global(body) { background: var(--a-page); }
-  article {
-    max-width: 57rem; margin: 0 auto;
-    background: var(--a-bg);
-    border: 3px solid var(--a-ink); border-radius: 1.4rem;
-    box-shadow: 0 6px 0 var(--a-ink);
-    padding: clamp(1.4rem, 4vw, 2.4rem) clamp(1.1rem, 4.5vw, 2.75rem) clamp(1.8rem, 5vw, 3rem);
-    transition: background-color .35s cubic-bezier(.41,.1,.13,1),
-                border-color .35s cubic-bezier(.41,.1,.13,1),
-                box-shadow .35s cubic-bezier(.41,.1,.13,1);
-  }
+  article { margin: 0 auto; }
   .back-row { margin: .8rem 0 1.3rem; }
   .back { font-size: .88rem; font-weight: 700; color: var(--a-primary); text-decoration: none; transition: color .2s; }
   .back:hover { color: var(--a-secondary); }

@@ -1,0 +1,12 @@
+/* 内容纸：玩具盒纸卡壳（详情文章纸与列表纸共用，2026-07-17 风格统一抽取）。
+   规格即原详情页文章纸；margin 由使用处定（详情 0 auto，列表另留上下距） */
+.paper {
+  max-width: 57rem;
+  background: var(--a-bg);
+  border: 3px solid var(--a-ink); border-radius: 1.4rem;
+  box-shadow: 0 6px 0 var(--a-ink);
+  padding: clamp(1.4rem, 4vw, 2.4rem) clamp(1.1rem, 4.5vw, 2.75rem) clamp(1.8rem, 5vw, 3rem);
+  transition: background-color .35s cubic-bezier(.41,.1,.13,1),
+              border-color .35s cubic-bezier(.41,.1,.13,1),
+              box-shadow .35s cubic-bezier(.41,.1,.13,1);
+}

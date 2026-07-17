@@ -291,6 +291,10 @@ try:
         got_min = pg.locator('.post-head .stat').inner_text()
         assert got_min == f'{exp_min} min read', f'详情页时长应 {exp_min} min read，实际 {got_min}'
         assert pg.locator('.prose .astro-code').count() >= 5, '应有 Shiki 代码块（该篇原文 10 个）'
+        # 全站风格统一：详情页矮天空 + 页脚
+        sky_h = pg.locator('.skyband').evaluate('e => e.getBoundingClientRect().height')
+        assert sky_h == 240, f'内页天空带应 15rem(240px)，实际 {sky_h}'
+        assert pg.locator('footer .mini').count() == 1, '详情页应有页脚'
         # TOC 断点 1440px：默认 1280 视口下 details 被脚本收起（此处验证收起态），
         # 展开态必须在宽视口页面上验证——count() 数 DOM 不分辨 details 开合，光数数会退化成假断言
         assert pg.locator('details.toc:not([open])').count() == 1, '窄屏 TOC 应默认收起为顶部条'
