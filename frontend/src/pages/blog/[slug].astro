@@ -6,6 +6,7 @@ import TocNav from '../../components/TocNav.astro';
 import SeriesNav from '../../components/SeriesNav.astro';
 import { seriesOf } from '../../lib/series';
 import { readingMinutes } from '../../lib/reading-time';
+import { GUIDE_TOOLS } from '../../lib/guide';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -17,6 +18,9 @@ export async function getStaticPaths() {
   const seriesKeys = new Set(posts.map(seriesOf).filter((s) => s !== null));
   const clash = posts.find((p) => seriesKeys.has(p.id));
   if (clash) throw new Error(`文章 slug「${clash.id}」与系列目录名冲突，请改文件名`);
+  const reserved = new Set<string>(GUIDE_TOOLS.map((t) => t.key));
+  const hitReserved = posts.find((p) => reserved.has(p.id));
+  if (hitReserved) throw new Error(`文章 slug「${hitReserved.id}」与 Guide 镜像路由冲突，请改文件名`);
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 

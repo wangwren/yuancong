@@ -4,8 +4,9 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description: string;
+  canonical?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, canonical } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,6 +17,7 @@ const { title, description } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {canonical && <link rel="canonical" href={canonical} />}
     <script is:inline>
       // 防闪：首帧渲染前定主题。优先访客记忆的选择，其次夜间时段（20-5 点）自动深色
       (function () {

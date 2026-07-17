@@ -18,4 +18,13 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const guide = defineCollection({
+  // AI 编程指南镜像（同步脚本生成，勿手改）。id 保留目录层级：<tool>/<slug>
+  loader: glob({ pattern: '**/*.md', base: './src/content/guide' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+  }),
+});
+
+export const collections = { blog, guide };
