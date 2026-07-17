@@ -1,6 +1,6 @@
 ---
 title: "02 · 安装与使用"
-description: "说个常见的糗事。很多人第一次装 Claude Code，随手搜了篇老教程，照着敲 npm install -g @anthropic-ai/claude-cod"
+description: "说个常见的糗事。很多人第一次装 Claude Code，随手搜了篇老教程…"
 ---
 
 > 📚 **系列导航**：上一篇 [01 · Claude Code 简介](/blog/claude-code/01-what-is-claude-code/) 讲清了它是什么、能干啥。这一篇带你真正把它装到自己电脑上，登录、跑起来，顺带把升级、卸载、踩坑排查一次说透。下一篇 [03 · Claude Code 如何工作](/blog/claude-code/03-how-it-works/) 掀开盖子看代理循环。
