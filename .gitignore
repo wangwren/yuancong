@@ -28,5 +28,5 @@ ROADMAP.md
 .git-backup-*/
 .privacy-terms.txt
 
-# 本地同步工具（小从定：不上传 GitHub）
+# 本地同步工具，不入库
 scripts/
