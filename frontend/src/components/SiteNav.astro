@@ -34,6 +34,8 @@ const onBlog = Astro.url.pathname.startsWith('/blog');
     position: relative; z-index: 2;
     display: flex; align-items: center; gap: 2.5rem;
     padding: 1.7rem 0; flex-wrap: wrap;
+    /* 跨页过渡「壳层静止」：钉住导航不参与 root 切换（design.md §8 跨页） */
+    view-transition-name: site-nav;
   }
   .wordmark {
     font-family: "Baloo 2", "PingFang SC", sans-serif; font-weight: 700;

@@ -160,6 +160,24 @@ try:
         assert 'dark' not in pg.evaluate("document.documentElement.className")
         got = pg.evaluate(canvas_probe)
         assert got[0] == got[1], f'浅色画布内联色与 --a-bg 漂移：{got}'
+        # 跨页过渡 opt-in 必须在 head 内联 <style> 里（Chrome 检查目标页 opt-in
+        # 不保证等外部 CSS，外部晚到会随机跳过过渡→硬切闪屏，2026-07-17 定位）
+        inline_vt = pg.evaluate(
+            "[...document.head.querySelectorAll('style')]"
+            ".some(s => s.textContent.includes('@view-transition'))")
+        assert inline_vt, '跨页过渡 opt-in 不在 head 内联 style 里'
+        # 「壳层静止」钉住三件套（D 档定稿，design.md §8）：导航/天空带/页脚
+        # 必须带 view-transition-name，丢了会退回整页闪变
+        pins = pg.evaluate(
+            "['nav', '.skyband', 'footer'].map(s =>"
+            " getComputedStyle(document.querySelector(s)).viewTransitionName)")
+        assert pins == ['site-nav', 'sky-band', 'site-footer'], f'壳层钉住丢失：{pins}'
+        # _headers 必须随构建进 dist：哈希资源 immutable 长缓存。没有它，线上
+        # 每跳都革验渲染阻塞 CSS（串行约 200ms），过渡激活时序被顶到悬崖边
+        hd = os.path.join(ROOT, 'dist', '_headers')
+        assert os.path.isfile(hd), 'dist 缺 _headers（public/_headers 未随构建拷贝）'
+        hd_text = open(hd, encoding='utf-8').read()
+        assert '/_astro/*' in hd_text and 'immutable' in hd_text, '_headers 缺哈希资源 immutable 规则'
 
         # --- 天空带：结构与星星显隐 ---
         assert pg.locator('.cloud').count() == 3

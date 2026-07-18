@@ -58,13 +58,19 @@ html:not(.dark) body.sky-dusk { --a-sky: hsl(276 60% 89%); --a-cloud: hsl(300 45
 
 /* ============ 基础 ============ */
 * { box-sizing: border-box; }
-/* 跨页柔和过渡：浏览器原生 cross-document view transition（默认约 0.25s 交叉淡入），
-   MPA 语义不变、脚本不受影响；不支持的浏览器自然回退为直接跳转 */
-@view-transition { navigation: auto; }
+/* 跨页过渡「壳层静止」（2026-07-18 小从定稿，design.md §8）：导航/天空带/页脚
+   在各自组件里 view-transition-name 钉住，root（内容区）快速软切换——旧页短淡出、
+   新页上浮升入（.rise 同款曲线）。@view-transition opt-in 在 BaseLayout head 内联
+   （不能放外部样式表：Chrome 检查目标页 opt-in 不保证等外部 CSS，晚到会随机跳过过渡）。
+   reduced-motion 由内联的 navigation: none 整体关闭，无需在此降级 */
+::view-transition-old(root) { animation-duration: .12s; }
+::view-transition-new(root) { animation: a-vt-in .22s cubic-bezier(.2,.7,.3,1); }
+@keyframes a-vt-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
 /* 锚点跳转（TOC 点击等）平滑滚动 */
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
-  @view-transition { navigation: none; }
   html { scroll-behavior: auto; }
 }
 body {

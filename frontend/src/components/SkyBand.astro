@@ -36,6 +36,9 @@ const { height = '30rem' } = Astro.props;
        让最后 5rem 平滑淡出。30rem 首页带此区间本就近乎全透明，视觉零变化 */
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 5rem), transparent);
     mask-image: linear-gradient(to bottom, #000 calc(100% - 5rem), transparent);
+    /* 跨页过渡「壳层静止」：天空带独立于 root 切换，首页↔内页高度差
+       （30rem↔15rem）由过渡组连续形变（design.md §8 跨页） */
+    view-transition-name: sky-band;
   }
   .cloud {
     position: absolute; background: var(--a-cloud);

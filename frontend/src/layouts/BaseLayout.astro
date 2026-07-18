@@ -35,6 +35,13 @@ const { title, description, canonical } = Astro.props;
          颜色值必须与全局 token --a-bg 保持一致（smoke 有对拍断言防漂移） */
       html { background: hsl(0 0% 100%); color-scheme: light; }
       html.dark { background: hsl(223 25% 9%); color-scheme: dark; }
+      /* 防闪之三：跨页过渡 opt-in 必须内联——Chrome 检查目标页 @view-transition
+         时不保证等外部样式表，外部 CSS 到得晚（线上革验约 200ms）会被判成
+         「未 opt-in」而随机跳过过渡，旧页冻结后硬切、深色下即闪屏 */
+      @view-transition { navigation: auto; }
+      @media (prefers-reduced-motion: reduce) {
+        @view-transition { navigation: none; }
+      }
     </style>
   </head>
   <body>

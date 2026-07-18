@@ -9,6 +9,8 @@
     border-top: 1px solid var(--a-line);
     padding: 1.5rem 0 2rem; text-align: center;
     color: var(--a-muted); font-size: .82rem; position: relative; z-index: 1;
+    /* 跨页过渡「壳层静止」：钉住页脚不参与 root 切换（design.md §8 跨页） */
+    view-transition-name: site-footer;
   }
   .mini { font-family: "Baloo 2", sans-serif; }
   .mini .y { color: var(--a-secondary); }
