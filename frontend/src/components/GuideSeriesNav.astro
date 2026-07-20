@@ -26,8 +26,8 @@ const chapters = chapterGroups(tool, posts);
         {c.items.map((p) => (
           <li>
             {p.id === currentId
-              ? <span aria-current="page">{p.data.title}</span>
-              : <a href={`/blog/${p.id}/`}>{p.data.title}</a>}
+              ? <span aria-current="page" title={p.data.title}>{p.data.title}</span>
+              : <a href={`/blog/${p.id}/`} title={p.data.title}>{p.data.title}</a>}
           </li>
         ))}
       </ul>
@@ -36,10 +36,24 @@ const chapters = chapterGroups(tool, posts);
 </nav>
 
 <style>
-  /* 卡片壳/链接/宽屏浮动几何见 styles/side-card.css，开合动画见 styles/fold.css（共享） */
+  /* 卡片壳/链接/两行截断/宽屏几何见 styles/side-card.css，开合动画见 styles/fold.css（共享）。
+     本组件加「章 > 篇」树：章内篇目挂在一条主干线上、每篇 └ 连接符指引（对齐右侧 TOC 树语言） */
   .chap { margin: .15rem 0; }
   summary { cursor: pointer; font-weight: 700; color: var(--a-muted); padding: .2em 0; }
   summary:hover { color: var(--a-primary); }
   .chap[open] > summary { color: var(--a-ink); }
-  ul { list-style: none; margin: .2em 0 .55em; padding-left: 1.05em; }
+  /* 章内篇目列表：左侧主干竖线 + 每篇 └ 连接符 */
+  ul { list-style: none; margin: .1em 0 .5em; padding-left: 1.35em; position: relative; }
+  ul::before {
+    content: ''; position: absolute; left: .5em; top: 0; bottom: .35em;
+    width: 1.5px; background: var(--a-line);
+  }
+  li { position: relative; }
+  li::before {
+    content: ''; position: absolute; left: -.85em; top: .02em;
+    width: .5em; height: .78em;
+    border-left: 1.5px solid var(--a-line); border-bottom: 1.5px solid var(--a-line);
+    border-bottom-left-radius: 4px;
+  }
+  li:has(> span[aria-current])::before { border-color: var(--a-primary); }
 </style>

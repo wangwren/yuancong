@@ -18,14 +18,15 @@ const { name, posts, currentId } = Astro.props;
     {posts.map((p) => (
       <li>
         {p.id === currentId
-          ? <span aria-current="page">{p.data.title}</span>
-          : <a href={`/blog/${p.id}/`}>{p.data.title}</a>}
+          ? <span aria-current="page" title={p.data.title}>{p.data.title}</span>
+          : <a href={`/blog/${p.id}/`} title={p.data.title}>{p.data.title}</a>}
       </li>
     ))}
   </ol>
 </nav>
 
 <style>
-  /* 卡片壳/链接/宽屏浮动几何见 styles/side-card.css（与 Guide 侧栏共享） */
-  ol { margin: 0; padding-left: 1.4em; }
+  /* 卡片壳/链接/宽屏浮动几何见 styles/side-card.css（与 Guide 侧栏共享）；
+     序号由 side-card.css 的 CSS 计数器出，不用 ol 默认 marker，故 padding-left 归零 */
+  ol { margin: 0; padding-left: 0; }
 </style>

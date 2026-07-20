@@ -1,23 +1,37 @@
 /* 文章纸侧卡（「本系列」导航）：博客 SeriesNav 与 Guide GuideSeriesNav 共用的
-   卡片壳、链接样式与宽屏浮动几何——改这里同时生效两处，防两份拷贝漂移 */
+   壳、链接样式与宽屏浮动几何——改这里同时生效两处，防两份拷贝漂移。
+   宽屏悬浮时无框通透（A 方向，2026-07-20），让导航退为背景、正文聚焦。
+   博客系列扁平（<ol> 序号 + 当前项左竖条）；Guide 章节树（章 > 篇 └ 连接符）在 GuideSeriesNav */
 .series {
   margin-top: 2.6rem; padding: .9rem 1.2rem;
-  border: 2px solid var(--a-line); border-radius: .9rem;
+  border: 2px solid var(--a-line); border-radius: .9rem;   /* 窄屏纸内：细线内嵌 */
   font-size: .88rem;
 }
-.series .s-head { margin: 0 0 .5rem; font-weight: 700; }
-.series li { margin: .35em 0; line-height: 1.45; }
-.series a { color: var(--a-muted); text-decoration: none; }
+.series .s-head { margin: 0 0 .6rem; font-weight: 700; color: var(--a-ink); }
+.series li { margin: .42em 0; line-height: 1.5; }
+/* 条目两行截断：超出两行即 …，title 存全文（组件里传） */
+.series a, .series span[aria-current] {
+  color: var(--a-muted); text-decoration: none;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .series a:hover { color: var(--a-primary); }
-.series span[aria-current] { font-weight: 700; }
-/* 宽屏：悬浮到纸左缘外的页底空白区，位置与右侧 TOC 镜像 */
+.series span[aria-current] { color: var(--a-primary); font-weight: 700; }
+/* 博客系列用 <ol>（扁平、无子级）：CSS 计数器把序号收进行内 + 当前项左竖条落整行最左 */
+.series ol { list-style: none; counter-reset: s; }
+.series ol li { counter-increment: s; border-left: 3px solid transparent; padding-left: .7em; }
+.series ol a::before, .series ol span[aria-current]::before {
+  content: counter(s) ". "; color: var(--a-muted); font-variant-numeric: tabular-nums;
+}
+.series ol a:hover::before { color: var(--a-primary); }
+.series ol span[aria-current]::before { color: var(--a-primary); }
+.series ol li:has(> span[aria-current]) { border-left-color: var(--a-primary); }
+/* 宽屏：悬浮到纸左缘外的页底空白区，位置与右侧 TOC 镜像；无框通透 */
 @media (min-width: 1440px) {
   .series {
     position: fixed; top: 9.5rem;
     right: calc(50% + 29.5rem); width: 14.5rem;
     max-height: calc(100vh - 11.5rem); overflow-y: auto;
-    margin-top: 0; padding: .9rem 1.1rem; font-size: .84rem;
-    background: var(--a-bg);
-    border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
+    margin-top: 0; padding: .2rem 0 .2rem .1rem; font-size: .84rem;
+    background: transparent; border: none; box-shadow: none;
   }
 }

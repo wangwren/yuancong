@@ -12,39 +12,65 @@ const { headings } = Astro.props;
   <nav>
     <ul>
       {headings.map((h) => (
-        <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>
+        <li class={`d${h.depth}`}><a href={`#${h.slug}`} title={h.text}>{h.text}</a></li>
       ))}
     </ul>
   </nav>
 </details>
 
 <style>
-  /* 折叠态在纸内，走安静样式（细线框、无阴影），不与正文抢视觉重量 */
+  /* 窄屏折叠态在纸内，走安静样式（细线框、无阴影），不与正文抢视觉重量 */
   .toc {
     border: 2px solid var(--a-line); border-radius: .9rem;
     padding: .6rem .95rem; font-size: .84rem;
   }
-  summary { font-weight: 700; cursor: pointer; color: var(--a-muted); }
+  summary { font-weight: 700; cursor: pointer; color: var(--a-ink); }
   nav { margin-top: .5rem; }
-  ul { list-style: none; margin: 0; padding: 0; }
-  li { margin: .3em 0; line-height: 1.4; }
-  li.d3 { padding-left: .9em; }
-  li.d4 { padding-left: 1.8em; }
-  a { color: var(--a-muted); text-decoration: none; display: block; }
+  /* 主干竖线贯穿一级项圆点（目录树的脊柱） */
+  ul { list-style: none; margin: 0; padding: 0; position: relative; }
+  ul::before {
+    content: ''; position: absolute; left: 3px; top: .55em; bottom: .55em;
+    width: 1.5px; background: var(--a-line);
+  }
+  li { position: relative; margin: .5em 0; line-height: 1.45; }
+  /* 条目两行截断：超出两行显示 …，title 存全文 */
+  a {
+    color: var(--a-muted); text-decoration: none;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
   a:hover { color: var(--a-primary); }
-  a.now { color: var(--a-primary); font-weight: 700; }  /* 阅读位置联动高亮 */
-  /* 宽屏：悬浮到 57rem 文章纸右缘外的页底空白区，正文不让位；描边阴影比纸低一档。
+  a.now { color: var(--a-primary); font-weight: 700; }              /* 阅读位置联动高亮 */
+  /* 一级（h2）：实心圆点骑主干线 + 悬挂缩进（第二行对齐首行文字） */
+  li.d2 { padding-left: 1.15em; }
+  li.d2::before {
+    content: ''; position: absolute; left: 0; top: .5em;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--a-muted);
+  }
+  /* 二 / 三级（h3/h4）：└ 连接符从主干拐入 + 递进缩进 */
+  li.d3 { padding-left: 2.1em; }
+  li.d4 { padding-left: 3.1em; }
+  li.d3::before, li.d4::before {
+    content: ''; position: absolute; top: -.05em;
+    width: .55em; height: .82em;
+    border-left: 1.5px solid var(--a-line); border-bottom: 1.5px solid var(--a-line);
+    border-bottom-left-radius: 4px;
+  }
+  li.d3::before { left: .7em; }
+  li.d4::before { left: 1.7em; }
+  /* 当前项：圆点 / 连接符 / 文字同步主色 */
+  li.d2:has(a.now)::before { background: var(--a-primary); }
+  li.d3:has(a.now)::before, li.d4:has(a.now)::before { border-color: var(--a-primary); }
+  /* 宽屏：悬浮到 57rem 文章纸右缘外的页底空白区，正文不让位；无框通透。
      纸半宽 28.5rem + 1rem 间距，栏宽 14.5rem → 右缘在 50%+44rem，需视口 ≥ 约 1423px */
   @media (min-width: 1440px) {
     .toc {
       position: fixed; top: 9.5rem;   /* 与文章纸顶边平齐 */
       left: calc(50% + 29.5rem); width: 14.5rem;
       max-height: calc(100vh - 11.5rem); overflow-y: auto;
-      background: var(--a-bg);
-      border: 2px solid var(--a-ink); box-shadow: 0 3px 0 var(--a-ink);
-      padding: .9rem 1.1rem;
+      background: transparent; border: none; box-shadow: none;
+      padding: .2rem 0 .2rem .1rem;
     }
-    summary { pointer-events: none; color: var(--a-ink); }  /* 宽屏常开，不给折叠 */
+    summary { pointer-events: none; }  /* 宽屏常开，不给折叠 */
   }
 </style>
 
