@@ -1,44 +1,63 @@
 ---
-// 打字机标题：.ch 逐字占位（布局不跳动），点亮动画脚本见 Task 6
+// 打字机标题：.ch 逐字占位（布局不跳动）打出「Welcome to my 」，
+// 打完 stamp 出「blog」玩具盒贴纸。字体用 Baloo 2（与导航字标同款，全站唯一展示字体）。
 ---
 
 <div class="hero">
-  <h1 id="typing"><span class="ch">你</span><span class="ch">好</span><span class="ch">，</span><span class="ch">我</span><span class="ch">是</span><span class="me"><span class="ch">小</span><span class="ch">从</span></span><span class="ch">。</span></h1>
-  <p class="intro rise" style="--d:200ms">一个程序员，也是爱折腾产品的人。白天写服务端，晚上写点感兴趣的东西。</p>
+  <h1 id="typing"><span class="ch">W</span><span class="ch">e</span><span class="ch">l</span><span class="ch">c</span><span class="ch">o</span><span class="ch">m</span><span class="ch">e</span><span class="ch"> </span><span class="ch">t</span><span class="ch">o</span><span class="ch"> </span><span class="ch">m</span><span class="ch">y</span><span class="ch"> </span><span class="tag">blog</span></h1>
+  <p class="intro rise" style="--d:200ms">你好，我是小从，一个程序员。</p>
 </div>
 
 <style>
   .hero { position: relative; z-index: 1; padding: 5rem 0 4.2rem; text-align: center; }
   h1 {
-    font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.18; margin: 0 0 1.2rem;
+    font-family: "Baloo 2", "PingFang SC", sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.2; margin: 0 0 1.2rem;
     font-weight: 700; letter-spacing: .01em;
   }
-  h1 .me { color: var(--a-primary); }
   h1 .ch { opacity: 0; }
   h1 .ch.on { opacity: 1; }
+  /* 「blog」玩具盒贴纸：撞色实底 + 粗描边 + 硬阴影 + 微旋，同全站卡片语言。
+     字色用 --a-bg 咬住底色，深浅两态自动成立。默认隐藏，打完由脚本 stamp 进场 */
+  h1 .tag {
+    display: inline-block; opacity: 0;
+    background: var(--a-primary); color: var(--a-bg);
+    border: 3px solid var(--a-ink); border-radius: .28em;
+    box-shadow: 0 5px 0 var(--a-ink); padding: 0 .18em .04em;
+    transform: rotate(-3deg); line-height: 1.05;
+  }
+  h1 .tag.on { opacity: 1; animation: stamp .24s cubic-bezier(.2,.7,.3,1.4); }
+  @keyframes stamp {
+    from { transform: rotate(-3deg) scale(.86); }
+    to { transform: rotate(-3deg) scale(1); }
+  }
   @media (prefers-reduced-motion: reduce) {
     h1 .ch { opacity: 1; }
+    h1 .tag { opacity: 1; animation: none; }
   }
   .hero p.intro { max-width: 30em; margin: 0 auto; color: var(--a-muted); font-size: 1.08rem; }
 </style>
 
 <script>
-  // 打字机：逐字点亮（占位不变避免布局跳动），逗号后停顿一拍像真人换气
+  // 打字机：逐字点亮「Welcome to my 」（占位不变避免布局跳动），打完 stamp 出「blog」贴纸
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const chars = Array.from(document.querySelectorAll<HTMLElement>('#typing .ch'));
+  const tag = document.querySelector<HTMLElement>('#typing .tag');
   if (!reduced && chars.length > 0) {
     const caret = document.createElement('span');
     caret.className = 'type-caret';
     let i = 0;
     const typeNext = () => {
       if (i >= chars.length) {
-        setTimeout(() => caret.remove(), 2200);
+        caret.remove();                        // 打到 my，光标先退场
+        // 停一拍，「blog」贴纸再 stamp 出来收尾（光标先走、贴纸后出——小从定）
+        if (tag) setTimeout(() => tag.classList.add('on'), 220);
         return;
       }
       const ch = chars[i++];
       ch.classList.add('on');
       ch.insertAdjacentElement('afterend', caret);
-      const delay = ch.textContent === '，' ? 680 : 130 + Math.random() * 110;
+      const delay = 130 + Math.random() * 110;
       setTimeout(typeNext, delay);
     };
     setTimeout(typeNext, 500);

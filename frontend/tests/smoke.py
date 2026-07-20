@@ -88,7 +88,9 @@ try:
         pg.add_init_script(
             "if (!localStorage.getItem('theme')) localStorage.setItem('theme','light');")
         pg.goto(URL)
-        assert pg.locator('h1 .me').inner_text() == '小从'
+        assert pg.locator('#typing').text_content() == 'Welcome to my blog', \
+            'Hero 标题应为 Welcome to my blog'
+        assert '小从' in pg.locator('.hero p.intro').inner_text(), 'Hero 副标题应含「小从」'
         assert pg.locator('.nav-soon').count() == 2, 'SOON 只剩 Tools/About'
         assert pg.locator('nav a.nav-link[href="/blog/"]').count() == 1, '导航 Blog 应可点'
         assert pg.locator('nav a.action[href="/rss.xml"]').count() == 1, '导航应有 RSS 入口'
@@ -277,6 +279,14 @@ try:
         pg4.wait_for_function(
             "document.querySelectorAll('#typing .ch.on').length"
             " === document.querySelectorAll('#typing .ch').length", timeout=8000)
+        # 打到 my：光标先退场（此刻 caret 已创建且在，等它消失才是真验证退场）
+        pg4.wait_for_function(
+            "() => document.querySelectorAll('.type-caret').length === 0", timeout=3000)
+        # 光标退场后，「blog」贴纸再 stamp 出（光标先走、贴纸后出）
+        pg4.wait_for_function(
+            "() => document.querySelector('#typing .tag')?.classList.contains('on')",
+            timeout=3000)
+        assert pg4.locator('#typing .tag').text_content() == 'blog', '「blog」应为 stamp 出的贴纸'
         pg4.mouse.click(640, 300)  # hero 简介行附近，确保落在 body 内容区内
         assert pg4.locator('.bit').count() > 0, '点击空白应产生撒花粒子'
         pg4.wait_for_function("document.querySelectorAll('.bit').length === 0",
@@ -289,6 +299,9 @@ try:
         pg5.goto(URL)
         assert pg5.evaluate(
             "getComputedStyle(document.querySelector('#typing .ch')).opacity") == '1'
+        assert pg5.evaluate(
+            "getComputedStyle(document.querySelector('#typing .tag')).opacity") == '1', \
+            'reduced-motion 下「blog」贴纸应直接可见（不靠脚本 stamp）'
         assert pg5.locator('.type-caret').count() == 0
         pg5.mouse.click(640, 300)
         pg5.wait_for_timeout(300)
