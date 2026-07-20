@@ -2,28 +2,54 @@
 // 全宽天空带：漂云（浅色）+ 星空（深色可见）。天色随访客本地时段：
 // 晨昏改色（body.sky-dawn / body.sky-dusk），夜间自动深色由 BaseLayout 内联脚本负责。
 // height：首页 30rem（默认），内页 15rem 矮版——全站统一「天空 → 内容」结构。
-// 云 / 星最低位在 14rem 内，矮版不裁切。
+// 云 / 星最低位控制在带内，矮版底部渐隐遮罩兜住。
 interface Props { height?: string }
 const { height = '30rem' } = Astro.props;
+
+// 星场：构建时用固定种子伪随机生成（确定性、纯静态、零运行时 JS）。
+// 真夜空感 = 繁密 + 随机分布 + 亮度分层（多微光 / 少亮星带光晕）+ 各自错开、深浅不一的细腻闪烁。
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20260720);
+const STAR_COUNT = 78;
+const stars = Array.from({ length: STAR_COUNT }, () => {
+  const tier = rand();
+  const r2 = rand();
+  let sz: number, oMin: number, oMax: number, glow: boolean;
+  if (tier < 0.66) {                 // 微光小星（多）——几乎不闪，压住整体不浮夸
+    sz = 4 + r2 * 2.5; oMin = 0.12 + rand() * 0.12; oMax = 0.34 + rand() * 0.16; glow = false;
+  } else if (tier < 0.9) {           // 中等星
+    sz = 6.5 + r2 * 3; oMin = 0.24 + rand() * 0.13; oMax = 0.58 + rand() * 0.2; glow = false;
+  } else {                           // 亮星（少）——更大、带柔光晕，负责「闪烁」的存在感
+    sz = 9.5 + r2 * 5; oMin = 0.4 + rand() * 0.2; oMax = 0.88 + rand() * 0.12; glow = true;
+  }
+  const left = rand() * 100;
+  const top = 0.5 + Math.pow(rand(), 1.8) * 22;   // rem：向上聚集（远离下方内容 / 地平线）
+  const td = 2.6 + rand() * 4.6;                  // 周期各异，避免齐刷刷同步脉动
+  const tw = -rand() * 9;                         // 起始相位打散
+  const hr = rand();                              // 微弱色温差：多冷白、少暖白
+  const hue = hr < 0.62 ? 220 : hr < 0.82 ? 45 : 205;
+  const sat = hr < 0.62 ? 18 : 60;
+  return { left, top, sz, oMin, oMax, glow, td, tw, hue, sat };
+});
 ---
 
 <div class="skyband" style={`--sky-h: ${height}`} aria-hidden="true">
   <div class="cloud c1"></div>
   <div class="cloud c2"></div>
   <div class="cloud c3"></div>
-  <span class="star big" style="left:8%;top:3.5rem;--tw:0s;--sz:4px"></span>
-  <span class="star" style="left:15%;top:8rem;--tw:1.4s;--td:2.6s"></span>
-  <span class="star" style="left:22%;top:5rem;--tw:.7s"></span>
-  <span class="star" style="left:31%;top:11rem;--tw:2.1s;--sz:2px"></span>
-  <span class="star big" style="left:38%;top:6.5rem;--tw:1.1s;--sz:4px;--td:4s"></span>
-  <span class="star" style="left:46%;top:3rem;--tw:.3s;--sz:2px"></span>
-  <span class="star" style="left:54%;top:9.5rem;--tw:1.8s"></span>
-  <span class="star" style="left:61%;top:5.5rem;--tw:.9s;--td:2.8s"></span>
-  <span class="star big" style="left:69%;top:12rem;--tw:2.4s;--sz:4px"></span>
-  <span class="star" style="left:76%;top:4rem;--tw:1.6s;--sz:2px"></span>
-  <span class="star" style="left:83%;top:8.5rem;--tw:.5s"></span>
-  <span class="star" style="left:90%;top:5rem;--tw:2s;--td:3.6s"></span>
-  <span class="star" style="left:95%;top:10rem;--tw:1.2s;--sz:2px"></span>
+  {stars.map((s) => (
+    <span
+      class={s.glow ? 'star big' : 'star'}
+      style={`left:${s.left.toFixed(2)}%;top:${s.top.toFixed(2)}rem;--sz:${s.sz.toFixed(1)}px;--td:${s.td.toFixed(1)}s;--tw:${s.tw.toFixed(1)}s;--omin:${s.oMin.toFixed(2)};--omax:${s.oMax.toFixed(2)};--c:hsl(${s.hue} ${s.sat}% 92%)`}
+    ></span>
+  ))}
 </div>
 
 <style>
@@ -51,16 +77,24 @@ const { height = '30rem' } = Astro.props;
   @keyframes drift { from { transform: translateX(-12rem); } to { transform: translateX(105vw); } }
   @media (prefers-reduced-motion: reduce) { .cloud { animation: none; } }
 
+  /* 星星：四角星芒 ✦（不是圆点），clip-path 细长四芒。默认隐藏（浅色不显），
+     深色下各自错相位、深浅不一地闪烁；亮星用 drop-shadow 沿星形发柔光晕 */
   .star {
-    position: absolute; border-radius: 50%;
+    position: absolute;
     width: var(--sz, 3px); height: var(--sz, 3px);
-    background: hsl(50 100% 86%); opacity: 0;
+    background: var(--c, hsl(220 20% 92%)); opacity: 0;
+    clip-path: polygon(50% 0, 54% 46%, 100% 50%, 54% 54%, 50% 100%, 46% 54%, 0 50%, 46% 46%);
   }
-  .star.big { box-shadow: 0 0 6px hsl(50 100% 80% / .9); }
-  :global(html.dark) .star { animation: twinkle var(--td, 3.2s) ease-in-out var(--tw, 0s) infinite; }
-  @keyframes twinkle { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+  .star.big { filter: drop-shadow(0 0 calc(var(--sz, 9px) * .45) var(--c, hsl(45 60% 90%))); }
+  :global(html.dark) .star {
+    animation: twinkle var(--td, 3.6s) ease-in-out var(--tw, 0s) infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--omin, .2); }
+    50% { opacity: var(--omax, .8); }
+  }
   @media (prefers-reduced-motion: reduce) {
-    :global(html.dark) .star { animation: none; opacity: .6; }
+    :global(html.dark) .star { animation: none; opacity: var(--omax, .55); }
   }
 </style>
 

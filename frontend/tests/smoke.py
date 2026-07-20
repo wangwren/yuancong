@@ -183,7 +183,7 @@ try:
 
         # --- 天空带：结构与星星显隐 ---
         assert pg.locator('.cloud').count() == 3
-        assert pg.locator('.star').count() == 13
+        assert pg.locator('.star').count() >= 60, '深色星场应繁密（构建时生成一大片星）'
         # 全站风格统一：首页天空带保持 30rem 基准；页脚组件化后仍在
         sky_h = pg.locator('.skyband').evaluate('e => e.getBoundingClientRect().height')
         assert sky_h == 480, f'首页天空带应 30rem(480px)，实际 {sky_h}'
