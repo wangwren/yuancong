@@ -3,7 +3,7 @@ title: "43 · Git 工作流：让 Claude 当你的 git 副手"
 description: "翻一翻很多人过去一年的 git 提交记录，常能发现一个挺扎心的数字：差不多三成的 commit message 是 fix、update、改了下…"
 ---
 
-> 📚 **系列导航**：上一篇 [42 环境变量] 把那一堆 `ANTHROPIC_*`、`MCP_*` 开关的作用和优先级理清了。这一篇换个更日常的场景——**怎么让 Claude Code 接手你天天在干的 git 杂活**：看 diff、写 commit、开 PR、解冲突，外加跟 `gh` CLI 打配合。重点不是「它能不能干」，而是**哪些放心交给它、哪一步钥匙必须攥在你自己手里**。
+> 📚 **系列导航**：上一篇 [42 环境变量](/blog/claude-code/42-env-vars/) 把那一堆 `ANTHROPIC_*`、`MCP_*` 开关的作用和优先级理清了。这一篇换个更日常的场景——**怎么让 Claude Code 接手你天天在干的 git 杂活**：看 diff、写 commit、开 PR、解冲突，外加跟 `gh` CLI 打配合。重点不是「它能不能干」，而是**哪些放心交给它、哪一步钥匙必须攥在你自己手里**。
 
 翻一翻很多人过去一年的 git 提交记录，常能发现一个挺扎心的数字：**差不多三成的 commit message 是 `fix`、`update`、`改了下`、`wip` 这种废话。**
 

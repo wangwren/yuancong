@@ -3,7 +3,7 @@ title: "28 · skill-creator 使用：用一个 skill 造你自己的 skill"
 description: "都说 SKILL.md 不就一个 markdown 文件嘛，自己手写就完了，犯得着再请个工具？"
 ---
 
-> 📚 **系列导航**：上一篇 [27 Skills 使用实例] 教你怎么用好别人造的 skill——装进来、让它自动触发、用得顺手。这一篇反过来：教你造自己的。而且不靠手搓，靠官方那个专门用来造 skill 的 skill——`skill-creator`。
+> 📚 **系列导航**：上一篇 [27 Skills 使用实例](/blog/claude-code/27-skills-in-practice/) 教你怎么用好别人造的 skill——装进来、让它自动触发、用得顺手。这一篇反过来：教你造自己的。而且不靠手搓，靠官方那个专门用来造 skill 的 skill——`skill-creator`。
 
 都说 `SKILL.md` 不就一个 markdown 文件嘛，自己手写就完了，犯得着再请个工具？
 
