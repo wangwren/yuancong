@@ -484,10 +484,19 @@ try:
             assert pg.locator('.series details[open] [aria-current="page"]').count() == 1, \
                 '当前篇应高亮且在展开章内'
         # canonical 硬边界：博客与主页永不带 canonical（小从明确要求，防误伤自有内容）
+        # 同一批代表性路径顺带钉 Web Analytics beacon：全站在位、且恰好一个
         for path in ('', 'blog/', 'blog/mysql-interview-notes/', 'blog/claude-code/', 'blog/codex/'):
             pg.goto(URL + path)
             n = pg.locator('head link[rel="canonical"]').count()
             assert n == 0, f'/{path} 不应有 canonical，实际 {n} 个'
+            # beacon 数量是双向断言：0 个=这页不进统计；2 个=浏览量凭空翻倍。
+            # 后者是真实风险——控制台若哪天把边缘自动注入修好，会和手动这份叠加
+            bc = pg.locator('script[src*="cloudflareinsights.com/beacon.min.js"]')
+            assert bc.count() == 1, \
+                f'/{path} beacon 应恰好 1 个（0=不统计，2=浏览量翻倍），实际 {bc.count()} 个'
+            tok = bc.get_attribute('data-cf-beacon') or ''
+            assert 'ce95287251a542288a5a2b4cff60f64f' in tok, \
+                f'/{path} beacon token 不对（换站点或手抖会静默失效）：{tok}'
         # 镜像正文 R2 图可达（取第一篇含图的已同步文章）
         img_page = None
         for tool in ('claude-code', 'codex'):

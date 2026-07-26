@@ -46,5 +46,18 @@ const { title, description, canonical } = Astro.props;
   </head>
   <body>
     <slot />
+    <!-- Cloudflare Web Analytics（隐私优先、无 cookie，故无需同意横幅）。
+         手动装而非靠边缘自动注入：Workers 静态资源模式下自动注入实测不生效
+         （站点在控制台注册一个月，页面里始终没有 beacon、统计零数据，2026-07-26 定位）。
+         手动装的额外好处是进版本管理、可被 smoke 断言覆盖。
+         位置在 body 末尾（官方建议）：head 那几段都是首帧关键路径，不混第三方脚本。
+         type=module 天然延迟执行，不阻塞渲染。
+         token 是公开的站点标识、不是密钥——它本就明文出现在每个页面里给访客看 -->
+    <script
+      is:inline
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "ce95287251a542288a5a2b4cff60f64f"}'
+    ></script>
   </body>
 </html>
