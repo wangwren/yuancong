@@ -17,6 +17,12 @@ const { title, description, canonical } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- .ico 兜底老客户端与爬虫（现代浏览器认上面的 SVG，不会来取这个）。
+         apple-touch-icon 显式声明：不声明时 iOS Safari 会去猜 /apple-touch-icon.png
+         和 /apple-touch-icon-precomposed.png 两个路径，每个 iPhone 访客白送 2 个 404；
+         声明了就不再猜，所以 precomposed 那份不必存在 -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!-- wordmark 字体预载：配合 font-display optional 保证首帧前就绪、杜绝中途换字跳变 -->
     <link rel="preload" href="/fonts/baloo-2-latin-700.woff2" as="font" type="font/woff2" crossorigin />
     {canonical && <link rel="canonical" href={canonical} />}

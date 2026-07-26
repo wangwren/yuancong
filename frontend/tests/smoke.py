@@ -181,6 +181,42 @@ try:
         hd_text = open(hd, encoding='utf-8').read()
         assert '/_astro/*' in hd_text and 'immutable' in hd_text, '_headers 缺哈希资源 immutable 规则'
 
+        # sitemap 与 canonical 硬边界配套：sitemap 的语义是「请收录这些」，而镜像详情页
+        # 的 canonical 说「正主在官方站」——两个信号不能同时发。镜像排除后 Google 仍能
+        # 顺列表页站内链接爬到，访问不受影响。分片文件名按 sitemap-N.xml 全收，防日后分片
+        DIST = os.path.join(ROOT, 'dist')
+        sm_files = [f for f in os.listdir(DIST) if re.fullmatch(r'sitemap-\d+\.xml', f)]
+        assert sm_files, 'dist 缺 sitemap-N.xml（@astrojs/sitemap 未生效）'
+        assert os.path.isfile(os.path.join(DIST, 'sitemap-index.xml')), 'dist 缺 sitemap-index.xml'
+        locs = []
+        for f in sm_files:
+            locs += re.findall(r'<loc>(.*?)</loc>', open(os.path.join(DIST, f), encoding='utf-8').read())
+        bad_host = [u for u in locs if not u.startswith('https://yuancong.ai/')]
+        assert not bad_host, f'sitemap 混入非裸域 URL（www/http 会重开重复内容口子）：{bad_host}'
+        n_mirror = len([u for u in locs if re.search(r'/blog/(claude-code|codex)/[^/]+/$', u)])
+        assert n_mirror == 0, f'镜像详情页不应进 sitemap（与其 canonical 冲突），实际 {n_mirror} 个'
+        for tool in ('claude-code', 'codex'):
+            assert f'https://yuancong.ai/blog/{tool}/' in locs, \
+                f'{tool} tab 列表页是自有内容（章节导航 + 声明块、无 canonical），应留在 sitemap 内'
+        # 自有博客逐篇动态核对，不写死数量——扔 md 就推的工作流下写死会误报
+        for f in md_files():
+            slug = os.path.basename(f)[:-3]
+            assert f'https://yuancong.ai/blog/{slug}/' in locs, f'自有博客 {slug} 漏在 sitemap 外'
+        assert 'https://yuancong.ai/' in locs and 'https://yuancong.ai/blog/' in locs, \
+            'sitemap 应含主页与博客列表页'
+
+        # 图标三连：声明 + 文件都得在。apple-touch-icon 不声明时 iOS Safari 会去猜
+        # /apple-touch-icon.png 与 /apple-touch-icon-precomposed.png，每个 iPhone
+        # 访客白送 2 个 404；声明了就不猜，所以 precomposed 那份故意不存在
+        assert pg.locator('head link[rel="apple-touch-icon"]').count() == 1, \
+            'apple-touch-icon 声明缺失（缺了 iOS 会去猜路径、白刷 404）'
+        assert pg.locator('head link[rel="icon"][type="image/svg+xml"]').count() == 1, 'SVG favicon 声明缺失'
+        assert pg.locator('head link[rel="icon"][type="image/x-icon"]').count() == 1, '.ico 兜底声明缺失'
+        for f in ('apple-touch-icon.png', 'favicon.ico', 'favicon.svg'):
+            assert os.path.isfile(os.path.join(DIST, f)), f'dist 缺 {f}（public 未随构建拷贝）'
+        assert not os.path.isfile(os.path.join(DIST, 'apple-touch-icon-precomposed.png')), \
+            'precomposed 是冗余文件：已显式声明 apple-touch-icon，iOS 不会再猜该路径'
+
         # --- 天空带：结构与星星显隐 ---
         assert pg.locator('.cloud').count() == 3
         assert pg.locator('.star').count() >= 60, '深色星场应繁密（构建时生成一大片星）'
