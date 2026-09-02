@@ -14,8 +14,10 @@ export default defineConfig({
       // 镜像的 92 篇详情页不进 sitemap：它们的 canonical 指向官方站，而 sitemap
       // 的语义是「请收录这些页面」——两个信号直接冲突。排除后 Google 仍能顺着
       // 列表页的站内链接爬到它们，访问不受任何影响。
-      // 两个 tab 列表页是自有内容（章节导航 + 声明块，无 canonical），保留在内
-      filter: (page) => !MIRROR_DETAIL.test(page),
+      // 两个 tab 列表页是自有内容（章节导航 + 声明块，无 canonical），保留在内。
+      // 手册页（/manual/）也排除：它们带 meta robots noindex，靠直链分享给特定的人，
+      // 一边说别收录一边提交进 sitemap 是自相矛盾
+      filter: (page) => !MIRROR_DETAIL.test(page) && !page.includes('/manual/'),
     }),
   ],
   markdown: {

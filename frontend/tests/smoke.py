@@ -50,6 +50,11 @@ def guide_chapter_count(tool):
     return sum(1 for c in meta if slugs & set(c['slugs']))
 N_ALL = len(md_files())
 N_INTERVIEW = len(md_files('面试小题'))
+MANUAL = os.path.join(ROOT, 'src', 'content', 'manual')
+def manual_slugs():
+    # 手册页 id 即目录层级：<产品>/<角色>，URL 为 /manual/<产品>/<角色>/
+    return sorted(os.path.relpath(os.path.join(dp, f), MANUAL)[:-3].replace(os.sep, '/')
+                  for dp, _, fs in os.walk(MANUAL) for f in fs if f.endswith('.md'))
 # 不用 4321：本地后台 dev server 常驻该端口，撞车时 preview 起不来，
 # 测试会连上 dev server（源码）而非 dist 构建产物，静默测错目标
 PORT = 4322
@@ -204,6 +209,9 @@ try:
             assert f'https://yuancong.ai/blog/{slug}/' in locs, f'自有博客 {slug} 漏在 sitemap 外'
         assert 'https://yuancong.ai/' in locs and 'https://yuancong.ai/blog/' in locs, \
             'sitemap 应含主页与博客列表页'
+        # 手册页同理：它们带 noindex，一边说别收录一边提交进 sitemap 是自相矛盾
+        n_manual = len([u for u in locs if '/manual/' in u])
+        assert n_manual == 0, f'手册页不应进 sitemap（与其 noindex 冲突），实际 {n_manual} 个'
 
         # 图标三连：声明 + 文件都得在。apple-touch-icon 不声明时 iOS Safari 会去猜
         # /apple-touch-icon.png 与 /apple-touch-icon-precomposed.png，每个 iPhone
@@ -555,6 +563,32 @@ try:
         assert xml.count('<item>') == N_ALL, f'RSS 应含 {N_ALL} 篇，实际 {xml.count("<item>")}'
         assert '/blog/mysql-interview-notes/' in xml, 'RSS 链接应指向详情页'
         assert '<language>zh-cn</language>' in xml
+        assert '/manual/' not in xml, '手册页不是博客文章，不该进 RSS'
+
+        # --- 手册页（/manual/）：靠直链分享，站内零入口、搜不到 ---
+        slugs = manual_slugs()
+        assert slugs, 'src/content/manual 下应有手册（集合空了说明内容漏了）'
+        for slug in slugs:
+            pg.goto(URL + f'manual/{slug}/')
+            robots = pg.locator('head meta[name="robots"]').get_attribute('content')
+            assert robots == 'noindex, nofollow', f'{slug} 应带 noindex，实际 {robots}'
+            # canonical 硬边界：口子只对 Guide 镜像详情页开
+            assert pg.locator('head link[rel="canonical"]').count() == 0, f'{slug} 不应有 canonical'
+            assert pg.locator('.doc-head h1').count() == 1, f'{slug} 应有标题'
+            assert pg.locator('.doc-head time').count() == 1, f'{slug} 应显示更新日期'
+            assert pg.locator('footer .mini').count() == 1, f'{slug} 应有页脚'
+            # 手机截图限宽靠 .prose.shots：class 掉了图会撑满正文、一张顶掉一屏半
+            assert pg.locator('.prose.shots').count() == 1, f'{slug} 正文应挂 shots 变体'
+            srcs = pg.locator('.prose img').evaluate_all('els => els.map(e => e.src)')
+            assert srcs, f'{slug} 应有截图'
+            assert all('img.yuancong.ai/manual/' in s for s in srcs), f'{slug} 截图应全走 R2：{srcs}'
+            assert pg.request.get(srcs[0]).status == 200, f'{slug} 首张截图应可达'
+            box = pg.locator('.prose img').first.bounding_box()
+            assert box and round(box['width']) <= 320, f'{slug} 截图应限在 20rem 内'
+        # 站内零入口：手册只发直链，不该从任何公开页面被翻到
+        for path in ('', 'blog/'):
+            pg.goto(URL + path)
+            assert pg.locator('a[href*="/manual/"]').count() == 0, f'/{path} 不该有手册入口'
 
         assert not errs, errs
         print('SMOKE PASS')

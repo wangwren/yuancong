@@ -1,5 +1,5 @@
 ---
-// 文章纸阅读骨架：博客详情与 Guide 镜像详情共用。
+// 文章纸阅读骨架：博客详情、Guide 镜像详情与手册页共用。
 // 三层结构：微调色页底 → 文章「纸」（全站最重的玩具盒卡片）→ 内容。
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
@@ -12,16 +12,18 @@ import '../styles/paper.css';
 interface Props {
   title: string;
   description: string;
-  canonical?: string;   // 仅 Guide 镜像页传；博客页永不传
+  canonical?: string;   // 仅 Guide 镜像页传；博客页与手册页永不传
+  noindex?: boolean;    // 仅手册页传
+  proseClass?: string;  // 正文变体，目前只有手册页的 shots（手机截图限宽）
   backHref: string;
   backLabel: string;
   headings: MarkdownHeading[];
 }
-const { title, description, canonical, backHref, backLabel, headings } = Astro.props;
+const { title, description, canonical, noindex, proseClass, backHref, backLabel, headings } = Astro.props;
 const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
 ---
 
-<BaseLayout title={title} description={description} canonical={canonical}>
+<BaseLayout title={title} description={description} canonical={canonical} noindex={noindex}>
   <SkyBand height="15rem" />
   <div class="page">
     <SiteNav />
@@ -30,7 +32,7 @@ const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
       <slot name="head" />
       <div class="body-grid">
         {toc.length > 0 && <TocNav headings={toc} />}
-        <div class="prose"><slot /></div>
+        <div class:list={['prose', proseClass]}><slot /></div>
       </div>
       <slot name="foot" />
     </article>

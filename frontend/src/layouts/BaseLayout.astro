@@ -5,8 +5,9 @@ interface Props {
   title: string;
   description: string;
   canonical?: string;
+  noindex?: boolean;   // 仅手册页传：靠直链分享、不希望被搜到
 }
-const { title, description, canonical } = Astro.props;
+const { title, description, canonical, noindex } = Astro.props;
 ---
 
 <!doctype html>
@@ -26,6 +27,10 @@ const { title, description, canonical } = Astro.props;
     <!-- wordmark 字体预载：配合 font-display optional 保证首帧前就绪、杜绝中途换字跳变 -->
     <link rel="preload" href="/fonts/baloo-2-latin-700.woff2" as="font" type="font/woff2" crossorigin />
     {canonical && <link rel="canonical" href={canonical} />}
+    <!-- 不收录的正确信号是 meta robots，不是 robots.txt 的 Disallow：后者公开可读，
+         写进去等于对外公告有这么个目录，而且只拦爬取、不保证不索引。
+         配套 astro.config 的 sitemap 排除——两个信号必须同向 -->
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <script is:inline>
       // 防闪：首帧渲染前定主题。优先访客记忆的选择，其次夜间时段（20-5 点）自动深色
       (function () {

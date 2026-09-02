@@ -1,0 +1,30 @@
+---
+// 产品操作手册详情。站内零入口、不进 sitemap、带 noindex——靠分享直链访问。
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('manual');
+  return docs.map((doc) => ({ params: { slug: doc.id }, props: { doc } }));
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+const fmtUpdated = doc.data.updated.toISOString().slice(0, 10);
+---
+
+<ArticleLayout title={`${doc.data.title} — yuancong.ai`} description={doc.data.description}
+               noindex proseClass="shots" backHref="/" backLabel="回首页" headings={headings}>
+  <header class="doc-head" slot="head">
+    <h1>{doc.data.title}</h1>
+    <p class="meta">更新于 <time datetime={fmtUpdated}>{fmtUpdated}</time></p>
+  </header>
+  <Content />
+</ArticleLayout>
+
+<style>
+  /* 与博客详情同款页头，去掉标签与阅读时长：手册是拿来查的，不是读的 */
+  .doc-head { margin: 0 0 1.5rem; padding-bottom: 1.1rem; border-bottom: 2px dashed var(--a-line); }
+  h1 { margin: 0 0 .45em; font-size: clamp(1.55rem, 3.4vw, 2.25rem); line-height: 1.3; }
+  .meta { margin: 0; color: var(--a-muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+</style>

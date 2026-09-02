@@ -27,4 +27,15 @@ const guide = defineCollection({
   }),
 });
 
-export const collections = { blog, guide };
+const manual = defineCollection({
+  // 产品操作手册，给特定人看、靠直链访问（不进博客列表 / RSS / sitemap）。
+  // id 保留目录层级：<产品>/<角色>，即 URL /manual/<产品>/<角色>/
+  loader: glob({ pattern: '**/*.md', base: './src/content/manual' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    updated: z.coerce.date(),
+  }),
+});
+
+export const collections = { blog, guide, manual };

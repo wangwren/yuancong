@@ -134,6 +134,9 @@ a, h1, p, footer, .post-in, .mail-in, .action {
   border: 2px solid var(--a-ink); border-radius: .8rem;
   box-shadow: 0 3px 0 var(--a-ink);
 }
+/* 手册页的手机截图：780px 竖屏图铺满 57rem 正文时一张顶掉一屏半。
+   限到 20rem（≈ 真实手机宽度）居中，约 2.4 倍密度，界面文字仍清晰 */
+.prose.shots img { display: block; max-width: 20rem; margin: 1.4em auto; }
 .prose blockquote {
   margin: 1em 0; padding: .4em 1.1em;
   border-left: 4px solid var(--a-secondary);

@@ -35,7 +35,7 @@ for d in SCAN_DIRS:
                 bad.append(f'隐私词「{t}」: {p}')
         if 'fynotefile' in body:
             bad.append(f'第三方图床外链: {p}')
-        if p.suffix == '.md' and '](media/' in body:
+        if p.suffix == '.md' and ('](media/' in body or '](images/' in body):
             bad.append(f'相对图链未迁移: {p}')
 
 if not (FRONTEND / 'dist').exists():
