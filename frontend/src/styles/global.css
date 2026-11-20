@@ -137,6 +137,33 @@ a, h1, p, footer, .post-in, .mail-in, .action {
 /* 手册页的手机截图：780px 竖屏图铺满 57rem 正文时一张顶掉一屏半。
    限到 20rem（≈ 真实手机宽度）居中，约 2.4 倍密度，界面文字仍清晰 */
 .prose.shots img { display: block; max-width: 20rem; margin: 1.4em auto; }
+/* 正文插图：讲原理的示意图用内联 SVG 写在 Markdown 里，颜色全走 token，
+   深浅色自动跟随。外框与正文图片同为「轻」档。窄屏不缩字：SVG 有最小宽度，
+   外框里横向滚动（同表格做法）。图元只用下面这几个类，新图别写死色值 */
+.prose .fig { margin: 1.5em 0; }
+.prose .fig-box {
+  overflow-x: auto; background: var(--a-bg);
+  border: 2px solid var(--a-ink); border-radius: .8rem;
+  box-shadow: 0 3px 0 var(--a-ink);
+}
+.prose .fig svg { display: block; width: 100%; min-width: 34rem; height: auto; }
+.prose .fig figcaption { margin-top: .65em; font-size: .86rem; color: var(--a-muted); text-align: center; }
+.prose .fig text { fill: var(--a-ink); font-size: 15px; }
+.prose .fig .t-s { fill: var(--a-muted); font-size: 13px; }
+.prose .fig .t-b { font-weight: 700; }
+.prose .fig .t-pri { fill: var(--a-primary); }
+.prose .fig .t-sec { fill: var(--a-secondary); }
+.prose .fig .bx { fill: var(--a-bg); stroke: var(--a-ink); stroke-width: 2; }
+.prose .fig .bx-heap { fill: color-mix(in oklab, var(--a-primary) 12%, var(--a-bg)); stroke: var(--a-primary); stroke-width: 2; }
+.prose .fig .bx-off { fill: color-mix(in oklab, var(--a-secondary) 12%, var(--a-bg)); stroke: var(--a-secondary); stroke-width: 2; }
+.prose .fig .bx-dim { fill: var(--a-page); stroke: var(--a-line); stroke-width: 2; }
+.prose .fig .ln { fill: none; stroke: var(--a-ink); stroke-width: 2; }
+.prose .fig .ln-pri { stroke: var(--a-primary); }
+.prose .fig .ln-sec { stroke: var(--a-secondary); }
+.prose .fig .ln-dash { stroke-dasharray: 6 5; }
+.prose .fig .ah { fill: var(--a-ink); }
+.prose .fig .ah-pri { fill: var(--a-primary); }
+.prose .fig .ah-sec { fill: var(--a-secondary); }
 .prose blockquote {
   margin: 1em 0; padding: .4em 1.1em;
   border-left: 4px solid var(--a-secondary);

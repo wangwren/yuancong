@@ -26,6 +26,8 @@ def read_minutes(path):
     # 与站点 reading-time 同公式的测试侧对拍实现：CJK/350 + 英文词/200，保底 1。
     # frontmatter 不计入（Astro 的 post.body 不含 frontmatter）
     body = re.sub(r'^---\n.*?\n---\n', '', open(path, encoding='utf-8').read(), flags=re.S)
+    # 正文插图只算图上的文字（同 reading-time.ts）
+    body = re.sub(r'<figure[\s\S]*?</figure>', lambda m: re.sub(r'<[^>]+>', ' ', m.group(0)), body)
     cjk = len(re.findall(r'[一-鿿]', body))
     latin = len(re.findall(r'[a-zA-Z0-9]+', body))
     return max(1, int(cjk / 350 + latin / 200 + 0.5))
